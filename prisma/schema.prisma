@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../db/dev.db"
+}
+
+model Voice {
+  id                  String  @id @default(cuid())
+  Name                String
+  DisplayName         String
+  LocalName           String
+  ShortName           String
+  Gender              String
+  Locale              String
+  LocaleName          String
+  SecondaryLocaleList String?
+  StyleList           String?
+  SampleRateHertz     String?
+  VoiceType           String?
+  Status              String?
+  RolePlayList        String?
+  WordsPerMinute      String?
+
+  order     Int
+  createdAt DateTime @default(now())
+}
+
+model Speech {
+  id         String   @id @default(cuid())
+  title      String
+  voice      String
+  speech_url String
+  text_url   String
+  createdAt  DateTime @default(now())
+}

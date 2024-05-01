@@ -1,0 +1,15 @@
+.tone-mark {
+  position: relative; /* 设置为相对定位 */
+  display: inline-block; /* 设置为行内块元素 */
+  margin: 0 0.1em; /* 调整元素之间的间距 */
+}
+
+.tone-mark::before {
+  content: attr(data-tone); /* 使用 data-tone 属性的值作为内容 */
+  position: absolute;
+  top: -1em; /* 位置调整为元素上方 */
+  left: 50%; /* 水平居中 */
+  transform: translateX(-50%); /* 确保准确居中 */
+  font-weight: bold;
+  color: red; /* 颜色设置为红色，或者任何你需要的颜色 */
+}
