@@ -4,9 +4,9 @@ import { fetchRegionVoiceList, getVoiceList } from "@/actions/TTS";
 import { useVoiceStore } from "@/store/useVoiceStore";
 import { Voice } from "@prisma/client";
 import { useEffect, useState } from "react";
-import Loading from "./Loading";
 import VoiceCard from "./VoiceCard";
 import { Button } from "./ui/button";
+import Spinner from "./Spinner";
 
 const VoiceList = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -27,8 +27,8 @@ const VoiceList = () => {
 
   if (isLoading) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
-        <Loading />
+      <div className="w-full h-full flex flex-col items-center justify-center border rounded-sm">
+        <Spinner className="h-10 w-10 animate-spin text-sky-500 " />
       </div>
     );
   }

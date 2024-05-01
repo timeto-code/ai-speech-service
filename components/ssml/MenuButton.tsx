@@ -1,9 +1,9 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Button } from "../ui/button";
 import { useTTS_SynthesisButton } from "@/store/useTTSStore";
 import { useVoiceStore } from "@/store/useVoiceStore";
+import { Button } from "../ui/button";
 
 interface Props {
   label: string;
