@@ -1,18 +1,18 @@
 "use client";
 
-import { fetchRegionVoiceList, getVoiceList } from "@/actions/TTS";
+import { getVoiceList } from "@/actions/TTS";
 import { useVoiceStore } from "@/store/useVoiceStore";
 import { Voice } from "@prisma/client";
 import { useEffect, useState } from "react";
-import VoiceCard from "./VoiceCard";
-import { Button } from "./ui/button";
 import Spinner from "./Spinner";
+import VoiceCard from "./VoiceCard";
 
 const VoiceList = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [voiceList, setVoiceList] = useState<Voice[]>([]);
   const language = useVoiceStore((state) => state.language);
   const gender = useVoiceStore((state) => state.gender);
+  const voiceListRefreshed = useVoiceStore((state) => state.voiceListRefreshed);
 
   useEffect(() => {
     setIsLoading(true);
@@ -23,7 +23,7 @@ const VoiceList = () => {
     };
 
     fetchVoiceList();
-  }, [language, gender]);
+  }, [language, gender, voiceListRefreshed]);
 
   if (isLoading) {
     return (
@@ -42,15 +42,9 @@ const VoiceList = () => {
           ))}
         </div>
       ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          <span className="text-muted-foreground">暂无语音</span>
-          <Button
-            onClick={async () => {
-              await fetchRegionVoiceList();
-            }}
-          >
-            获取语言
-          </Button>
+        <div className="w-full h-full flex flex-col items-center justify-center border rounded-sm">
+          <span className="text-muted-foreground">无可用声音</span>
+          <span className="text-muted-foreground">请更新声音列表</span>
         </div>
       )}
     </div>

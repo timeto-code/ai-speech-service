@@ -10,7 +10,11 @@ const languages = [
   { label: "女", value: "Female" },
 ];
 
-const GenderCombobox = () => {
+interface Props {
+  isLoading: boolean;
+}
+
+const GenderCombobox = ({ isLoading }: Props) => {
   const [value, setValue] = React.useState<string>("All");
 
   useEffect(() => {
@@ -19,10 +23,12 @@ const GenderCombobox = () => {
 
   return (
     <Combobox
+      boxLabel="性别"
       options={languages}
       value={value}
       setValue={setValue}
-      className="h-[114px] w-[240px] py-1 px-0"
+      isLoading={isLoading}
+      className="h-[114px] w-[288px] py-1 px-0"
     />
   );
 };

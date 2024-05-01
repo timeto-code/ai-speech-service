@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchLanguageList } from "@/actions/TTS";
+import { fetchLanguageList, fetchRegionVoiceList } from "@/actions/TTS";
 import { useVoiceStore } from "@/store/useVoiceStore";
 import React, { useEffect } from "react";
 import Combobox from "./Combobox";
@@ -120,7 +120,11 @@ const CountryCodeMap = {
   VN: "Tiếng Việt (越南)",
 } as Record<string, string>;
 
-const LanguageCombobox = () => {
+interface Props {
+  isLoading: boolean;
+}
+
+const LanguageCombobox = ({ isLoading }: Props) => {
   const [value, setValue] = React.useState<string>("CN");
   const [languages, setLanguages] = React.useState<
     {
@@ -128,6 +132,8 @@ const LanguageCombobox = () => {
       value: string;
     }[]
   >([]);
+
+  const voiceListRefreshed = useVoiceStore((state) => state.voiceListRefreshed);
 
   useEffect(() => {
     const fetchLanguage = async () => {
@@ -142,7 +148,7 @@ const LanguageCombobox = () => {
     };
 
     fetchLanguage();
-  }, []);
+  }, [voiceListRefreshed]);
 
   useEffect(() => {
     useVoiceStore.setState({ language: value });
@@ -150,10 +156,12 @@ const LanguageCombobox = () => {
 
   return (
     <Combobox
+      boxLabel="语言"
       options={languages}
       value={value}
       setValue={setValue}
-      className="h-[calc(100vh-75px)] w-[240px] py-1 px-0"
+      isLoading={isLoading}
+      className="h-[calc(100vh-116px)] w-[288px] py-1 px-0"
     />
   );
 };

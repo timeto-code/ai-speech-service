@@ -12,23 +12,40 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import * as React from "react";
 
 interface ComboboxProps {
+  boxLabel: string;
   options: { value: string; label: string }[];
   value: string;
   setValue: (value: string) => void;
+  isLoading: boolean;
   className?: string;
 }
 
-const Combobox = ({ options, value, setValue, className }: ComboboxProps) => {
+const Combobox = ({
+  boxLabel,
+  options,
+  value,
+  setValue,
+  isLoading,
+  className,
+}: ComboboxProps) => {
   const [open, setOpen] = React.useState(false);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          className="w-[240px]  flex items-center justify-between"
+          className="w-full  flex items-center justify-between"
           variant="outline"
+          disabled={isLoading}
         >
-          <span className="text-nowrap truncate">
+          <span
+            className={cn(
+              "text-nowrap truncate",
+              boxLabel === "语言"
+                ? "before:content-['语言_:_']"
+                : "before:content-['性别_:_']"
+            )}
+          >
             {value
               ? options.find((option) => option.value === value)?.label
               : "Select framework..."}

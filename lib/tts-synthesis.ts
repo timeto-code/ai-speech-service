@@ -38,7 +38,7 @@ export const speechSynthesis = async (
   const data = {
     filename: "", // 文件名
     language: "", // SSML 语言
-    sectionPreview: sectionSynthesis, // 是否是段落中 TTS 请求
+    sectionPreview: sectionSynthesis, // 是否是单个段落的 TTS 请求
     sections: sectionSynthesis
       ? section
       : useSsmlSectionsStore.getState().sections, // SSML 段落数组
