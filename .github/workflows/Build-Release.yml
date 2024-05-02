@@ -50,7 +50,7 @@ jobs:
           cp ../package.json package.json
           cp ../package-lock.json package-lock.json
           cp ../.env.template .env
-          cp ../prisma prisma
+          cp -r ../prisma prisma
           cp ../README.md README.md
           cp ../LICENSE LICENSE
 
