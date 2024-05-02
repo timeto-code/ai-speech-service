@@ -55,6 +55,7 @@ jobs:
 
       - name: Zip production artifacts
         run: |
+          cd Microsoft-Speech-Service
           zip -r ../Microsoft-Speech-Service.zip .
 
       - name: Create release
