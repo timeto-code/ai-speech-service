@@ -1,5 +1,5 @@
 import { fetchLatestSpeech } from "@/actions/TTS";
-import { useAudioStore } from "@/store/useAudioStore";
+import { useAudioPlayerStore } from "@/store/useAudioPlayerStore";
 import {
   SsmlSection,
   useSsmlSectionsStore,
@@ -7,7 +7,6 @@ import {
 } from "@/store/useSSMLStore";
 import { useTTS_SynthesisButton } from "@/store/useTTSStore";
 import axios from "axios";
-import logger from "./logger";
 
 type DTO = {
   filename: string;
@@ -61,7 +60,7 @@ export const speechSynthesis = async (
       if (edata === "finished") {
         const speech = await fetchLatestSpeech();
         if (speech) {
-          useAudioStore.setState({ currentPlayingAudio: speech.speech_url });
+          useAudioPlayerStore.setState({ src: speech.speech_url });
           if (sectionSynthesis) {
             useSsmlSectionsStore.setState((state) => {
               return {
