@@ -1,14 +1,13 @@
 "use client";
 
 import { fetchRegionVoiceList } from "@/actions/TTS";
-import { useState } from "react";
-import GenderCombobox from "../GenderCombobox";
-import LanguageCombobox from "../LanguageCombobox";
-import Spinner from "../Spinner";
-import VoiceList from "../VoiceList";
-import { Button } from "../ui/button";
-import { Separator } from "../ui/separator";
 import { useVoiceStore } from "@/store/useVoiceStore";
+import { useState } from "react";
+import { Button } from "../ui/button";
+import GenderCombobox from "./GenderCombobox";
+import LanguageCombobox from "./LanguageCombobox";
+import Spinner from "./Spinner";
+import VoiceList from "./VoiceList";
 
 const VoiceConfig = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -35,23 +34,9 @@ const VoiceConfig = () => {
           <Spinner className="absolute top-3 left-[28%] h-4 w-4 animate-spin text-[#339900] mr-2" />
         )}
       </div>
-      <div className="flex items-center">
-        {/* <span className="mr-2 w-10">语言</span> */}
-        <div className="flex-1 w-full">
-          <LanguageCombobox isLoading={isLoading} />
-        </div>
-      </div>
-      <div className="flex items-center">
-        {/* <span className="mr-2 w-10">性别</span> */}
-        <div className="flex-1 w-full">
-          <GenderCombobox isLoading={isLoading} />
-        </div>
-      </div>
-      {/* <Separator className="my-1" /> */}
-
-      <div className="overflow-auto h-full">
-        <VoiceList />
-      </div>
+      <LanguageCombobox isLoading={isLoading} />
+      <GenderCombobox isLoading={isLoading} />
+      <VoiceList />
     </div>
   );
 };

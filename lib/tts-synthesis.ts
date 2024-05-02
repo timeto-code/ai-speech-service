@@ -7,6 +7,7 @@ import {
 } from "@/store/useSSMLStore";
 import { useTTS_SynthesisButton } from "@/store/useTTSStore";
 import axios from "axios";
+import logger from "./logger";
 
 type DTO = {
   filename: string;
@@ -32,8 +33,9 @@ export const speechSynthesis = async (
   // 整体转义时，需要等待段落整合完成
   if (!sectionSynthesis) {
     useSsmlSynthesisStore.getState().setStarted();
-    delay(1000);
+    await delay(1000);
   }
+  console.log("test");
 
   const data = {
     filename: "", // 文件名

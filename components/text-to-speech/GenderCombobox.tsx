@@ -2,7 +2,7 @@
 
 import { useVoiceStore } from "@/store/useVoiceStore";
 import React, { useEffect } from "react";
-import Combobox from "./Combobox";
+import Combobox from "../Combobox";
 
 const languages = [
   { label: "全部", value: "All" },

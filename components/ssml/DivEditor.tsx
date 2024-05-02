@@ -93,8 +93,10 @@ const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
   };
 
   const handleSynthesis = () => {
+    if (!contentArea.current?.innerHTML) return;
+
     speechSynthesis(true, [
-      { ...section, htmlContent: contentArea.current?.innerHTML },
+      { ...section, htmlContent: contentArea.current.innerHTML },
     ]);
   };
 

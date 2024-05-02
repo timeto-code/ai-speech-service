@@ -3,9 +3,10 @@
 import { getVoiceList } from "@/actions/TTS";
 import { useVoiceStore } from "@/store/useVoiceStore";
 import { Voice } from "@prisma/client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Spinner from "./Spinner";
 import VoiceCard from "./VoiceCard";
+import { cn } from "@/lib/utils";
 
 const VoiceList = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -13,6 +14,9 @@ const VoiceList = () => {
   const language = useVoiceStore((state) => state.language);
   const gender = useVoiceStore((state) => state.gender);
   const voiceListRefreshed = useVoiceStore((state) => state.voiceListRefreshed);
+  // 设置滚动条和内容的间隙
+  const scrollDiv = useRef<HTMLDivElement>(null);
+  const [isScrollBarVisible, setIsScrollBarVisible] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
@@ -25,6 +29,13 @@ const VoiceList = () => {
     fetchVoiceList();
   }, [language, gender, voiceListRefreshed]);
 
+  useEffect(() => {
+    if (!scrollDiv.current) return;
+    setIsScrollBarVisible(
+      scrollDiv.current.scrollHeight > scrollDiv.current.clientHeight
+    );
+  }, [scrollDiv.current]);
+
   if (isLoading) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center border rounded-sm">
@@ -34,7 +45,13 @@ const VoiceList = () => {
   }
 
   return (
-    <div className="w-full h-full">
+    <div
+      ref={scrollDiv}
+      className={cn(
+        "h-full flex-1 overflow-auto",
+        isScrollBarVisible ? "pr-1" : ""
+      )}
+    >
       {voiceList.length > 0 ? (
         <div className="flex flex-col gap-2">
           {voiceList.map((voice, index) => (

@@ -1,6 +1,4 @@
 import prisma from "./prisma";
-import fs from "fs/promises";
-import path from "path";
 
 export const saveSpeechAndXml = async (
   filename: string,
@@ -15,11 +13,6 @@ export const saveSpeechAndXml = async (
       text_url: `/speech${sectionPreview ? "/temp" : ""}/${filename}.xml`,
     },
   });
-};
-
-export const createLocalTextFile = async (title: string, content: string) => {
-  const filePath = path.join(process.cwd(), "public/speech", `${title}.txt`);
-  await fs.writeFile(filePath, content);
 };
 
 export const getLatestSpeech = async () => {

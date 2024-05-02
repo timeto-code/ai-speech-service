@@ -5,9 +5,8 @@ import { Voice } from "@prisma/client";
 import { Ellipsis } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import { Button } from "./ui/button";
-
-import "../styles/DivEditor.css";
+import "../../styles/DivEditor.css";
+import { Button } from "../ui/button";
 
 interface VoiceCardProps {
   voice: Voice;

@@ -3,7 +3,7 @@
 import { fetchLanguageList, fetchRegionVoiceList } from "@/actions/TTS";
 import { useVoiceStore } from "@/store/useVoiceStore";
 import React, { useEffect } from "react";
-import Combobox from "./Combobox";
+import Combobox from "../Combobox";
 
 const CountryCodeMap = {
   CN: "中文 (简体中文)",

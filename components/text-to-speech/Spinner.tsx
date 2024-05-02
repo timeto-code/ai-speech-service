@@ -1,6 +1,3 @@
-import React from "react";
-import sytles from "@/styles/Spinner.module.scss";
-
 interface SpinnerProps {
   className?: string;
 }
