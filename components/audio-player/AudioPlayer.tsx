@@ -2,7 +2,7 @@
 
 import { useMounted } from "@/hooks/useMounted";
 import { cn } from "@/lib/utils";
-import { useAudioStore } from "@/store/useAudioStore";
+import { useAudioPlayerStore } from "@/store/useAudioPlayerStore";
 import styles from "@/styles/AudioPlayer.module.scss";
 import moment from "moment";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -23,11 +23,11 @@ const AudioPlayer = () => {
   const [volume, setVolume] = React.useState(1);
   const [isMuted, setIsMuted] = React.useState(false);
 
-  const [src, setSrc] = useState("");
+  // 新音频 url
+  const src = useAudioPlayerStore((state) => state.src);
 
-  const currentPlayingAudio = useAudioStore(
-    (state) => state.currentPlayingAudio
-  );
+  // nextjs 在生产环境中，无法访问 public 目录下新生成内容，只能访问应用启动时存在的文件。所以，需要通过自定义 api 来访问 public 目录下的文件。
+  const [srcApi, setSrcApi] = useState("");
 
   const whilePlaying = useCallback(() => {
     if (audioRef.current) {
@@ -39,15 +39,9 @@ const AudioPlayer = () => {
     animationRef.current = requestAnimationFrame(whilePlaying);
   }, []);
 
-  // 检查是否有音频
-  const checkAudio = () => {
-    const src = useAudioStore.getState().currentPlayingAudio;
-    return !!src;
-  };
-
   // 播放/暂停
   const togglePlayPause = useCallback(() => {
-    if (!checkAudio()) return;
+    if (!src) return;
 
     setIsPlaying((prev) => !prev);
     if (audioRef.current) {
@@ -61,23 +55,9 @@ const AudioPlayer = () => {
     }
   }, [isPlaying, whilePlaying]);
 
-  // 重新播放
-  const handleReplay = useCallback(() => {
-    if (!checkAudio()) return;
-
-    setIsPlaying(true);
-    if (audioRef.current) {
-      audioRef.current.play();
-      animationRef.current = requestAnimationFrame(whilePlaying);
-      // audioRef.current.currentTime = 0;
-      // setCurrentTime(moment.utc(0 * 1000).format("mm:ss"));
-      // setCurrentSeconds(0);
-    }
-  }, [whilePlaying]);
-
   // 拖动进度条
   const changeRange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!checkAudio()) return;
+    if (!src) return;
 
     const value = e.target.value as unknown as number;
     if (!value) return;
@@ -89,7 +69,7 @@ const AudioPlayer = () => {
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!checkAudio()) return;
+    if (!src) return;
 
     const value = Number(e.target.value);
     setVolume(value);
@@ -100,7 +80,7 @@ const AudioPlayer = () => {
 
   // 静音
   const handleMute = () => {
-    if (!checkAudio()) return;
+    if (!src) return;
 
     setIsMuted((prev) => !prev);
     if (audioRef.current) {
@@ -110,7 +90,7 @@ const AudioPlayer = () => {
 
   // 快进
   const handleForward = () => {
-    if (!checkAudio()) return;
+    if (!src) return;
 
     if (audioRef.current) {
       audioRef.current.currentTime += 5;
@@ -119,7 +99,7 @@ const AudioPlayer = () => {
 
   // 快退
   const handleBackward = () => {
-    if (!checkAudio()) return;
+    if (!src) return;
 
     if (audioRef.current) {
       audioRef.current.currentTime -= 5;
@@ -155,11 +135,11 @@ const AudioPlayer = () => {
   }, []);
 
   useEffect(() => {
-    handleEnded();
-    if (currentPlayingAudio) {
-      setSrc(currentPlayingAudio);
+    if (src) {
+      const api = `/api/public/${src}`;
+      setSrcApi(api);
     }
-  }, [currentPlayingAudio, handleEnded]);
+  }, [src]);
 
   if (!isMounted) {
     return null;
@@ -169,7 +149,7 @@ const AudioPlayer = () => {
     <div className={cn("flex items-center px-1 w-full relative")}>
       <audio
         ref={audioRef}
-        src={src}
+        src={srcApi}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
       />

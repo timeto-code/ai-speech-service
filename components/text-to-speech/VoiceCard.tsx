@@ -4,10 +4,9 @@ import { useVoiceStore } from "@/store/useVoiceStore";
 import { Voice } from "@prisma/client";
 import { Ellipsis } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "../../styles/DivEditor.css";
 import { Button } from "../ui/button";
-import { loadRegionCodeMap } from "@/actions/TTS";
 
 // angrychat - 生气聊天
 // cheerful - 欢快

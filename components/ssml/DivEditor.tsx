@@ -1,7 +1,7 @@
 "use client";
 
 import { speechSynthesis } from "@/lib/tts-synthesis";
-import { useAudioStore } from "@/store/useAudioStore";
+import { useAudioPlayerStore } from "@/store/useAudioPlayerStore";
 import {
   SsmlSection,
   useSSMLStore,
@@ -11,6 +11,7 @@ import {
 import React, { useEffect } from "react";
 import "../../styles/DivEditor.css";
 import EditorMenu from "./EditorMenu";
+import { cn } from "@/lib/utils";
 
 interface DivEditorProps {
   section: SsmlSection;
@@ -94,17 +95,22 @@ const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
 
   const handleSynthesis = () => {
     if (!contentArea.current?.innerHTML) return;
+    if (!section.voice) return;
 
     speechSynthesis(true, [
       { ...section, htmlContent: contentArea.current.innerHTML },
     ]);
   };
 
+  const handlePlay = () => {
+    if (section.url) {
+      useAudioPlayerStore.setState({ src: section.url });
+    }
+  };
+
   const started = useSsmlSynthesisStore((state) => state.started);
 
   useEffect(() => {
-    console.log("started", started);
-
     useSsmlSectionsStore.setState((state) => {
       return {
         sections: state.sections.map((s) => {
@@ -123,23 +129,17 @@ const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
   return (
     <div className="border border-zinc-500/20 rounded-sm">
       <div className="bg-zinc-500/10 border-zinc-500/20 flex items-center h-9 px-2">
-        {/* <span className="text-sky-500 text-sm w-24">
-          &#10092;{section?.voice?.LocalName ?? "未选择声音"}&#10093;
-        </span> */}
-        <span className="text-sky-500 w-24 select-none" contentEditable={false}>
+        <span
+          className={cn("text-sky-500 w-24 select-none")}
+          contentEditable={false}
+        >
           {section?.voice?.LocalName ?? "未选择声音"}
         </span>
         <EditorMenu
           handleSynthesis={handleSynthesis}
           handleShendiao={handleShengDiao}
           handleBreak={handleBreak}
-          handlePlay={() => {
-            console.log("section.url", section.url);
-
-            if (section.url) {
-              useAudioStore.setState({ currentPlayingAudio: section.url });
-            }
-          }}
+          handlePlay={handlePlay}
           handleDelete={() => {
             handleDeleteSection(section.id);
           }}
