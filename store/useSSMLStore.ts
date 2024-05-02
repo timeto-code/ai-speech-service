@@ -24,14 +24,6 @@ export const useSsmlSectionsStore = create<SsmlSectionsStore>((set) => ({
   sections: [],
 }));
 
-type SSMLStyleStore = {
-  style: string;
-};
-
-export const useSSMLStyleStore = create<SSMLStyleStore>((set) => ({
-  style: "",
-}));
-
 type SsmlSynthesisStore = {
   started: number;
   setStarted: () => void;

@@ -80,7 +80,7 @@
   }
 }
 
-/* @media (prefers-color-scheme: dark) { */
+/* 滚动条样式设置 */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -90,13 +90,15 @@
 ::-webkit-scrollbar-track {
   /* margin: 2px 0; */
   background-color: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
+  /* background-color: rgba(0, 0, 0, 0); */
+  border-radius: 9999px;
 }
 
 /* 滚动条颜色 */
 ::-webkit-scrollbar-thumb {
-  width: 8px;
-  border-radius: 8px;
+  /* border: 3px solid rgba(0, 0, 0, 0); */
+  background-clip: padding-box;
+  border-radius: 9999px;
   background-color: #3b3b3b91;
 }
 
@@ -109,5 +111,3 @@
 ::-webkit-scrollbar-thumb:active {
   background-color: #5a5a5a;
 }
-/* } */
-/* 设置滚动条样式 end */

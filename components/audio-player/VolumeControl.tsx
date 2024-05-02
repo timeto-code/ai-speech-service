@@ -1,7 +1,7 @@
 "use client";
 
 import styles from "@/styles/VolumeControl.module.scss";
-import React, { useState } from "react";
+import React from "react";
 import {
   BiSolidVolume,
   BiSolidVolumeFull,

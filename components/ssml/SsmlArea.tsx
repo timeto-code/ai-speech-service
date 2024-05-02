@@ -7,15 +7,19 @@ import {
 } from "@/store/useSSMLStore";
 import { useVoiceStore } from "@/store/useVoiceStore";
 import { Plus } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import "../../styles/SsmlArea.css";
 import { Button } from "../ui/button";
 import DivEditor from "./DivEditor";
+import { cn } from "@/lib/utils";
 
 const SsmlArea = () => {
   const voice = useVoiceStore((state) => state.voice);
-
   const sections = useSsmlSectionsStore((state) => state.sections);
+  // 设置滚动条和内容的间隙
+  const scrollDiv = useRef<HTMLDivElement>(null);
+  const [isScrollBarVisible, setIsScrollBarVisible] = useState(false);
+  const [newSectionAction, setNewSectionAction] = useState(0);
 
   // 新建一个声音段落
   const handleNewSection = () => {
@@ -29,6 +33,9 @@ const SsmlArea = () => {
     useSsmlSectionsStore.setState({
       sections: [...currentSections, newSections],
     });
+
+    // 设置滚动条和内容的间距
+    setNewSectionAction(new Date().getTime());
   };
 
   // 删除一个声音段落
@@ -39,6 +46,9 @@ const SsmlArea = () => {
     useSsmlSectionsStore.setState({
       sections: newSections,
     });
+
+    // 设置滚动条和内容的间距
+    setNewSectionAction(new Date().getTime());
   };
 
   // 点击声音列表时，更新当前聚焦段落的声音
@@ -62,8 +72,22 @@ const SsmlArea = () => {
     }
   }, [voice]);
 
+  // 设置滚动条和内容的间距
+  useEffect(() => {
+    if (!scrollDiv.current) return;
+    setIsScrollBarVisible(
+      scrollDiv.current.scrollHeight > scrollDiv.current.clientHeight
+    );
+  }, [newSectionAction]);
+
   return (
-    <div className="h-full overflow-auto pr-1 flex flex-col gap-3">
+    <div
+      ref={scrollDiv}
+      className={cn(
+        "h-full overflow-auto flex flex-col gap-3",
+        isScrollBarVisible ? "pr-1" : ""
+      )}
+    >
       {sections.map((section) => (
         <DivEditor
           key={section.id}

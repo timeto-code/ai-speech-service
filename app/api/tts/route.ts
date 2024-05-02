@@ -15,82 +15,18 @@ const response = (message: string, fileName: string, status: number) => {
   return NextResponse.json({ message, fileName }, { status });
 };
 
-// export async function POST(request: NextRequest) {
-//   try {
-//     const { text, currentVoice: voice } = await request.json();
-
-//     // logger.debug(`text: ${text}`);
-//     // logger.debug(`voice: ${voice}`);
-
-//     if (!text || !voice) {
-//       return response("text and voice are required", "", 400);
-//     }
-
-//     const rootPath = process.cwd();
-//     const fileTitle = `${voice}-${new Date().getTime()}`;
-//     const fileName = `${fileTitle}.wav`;
-//     const audioFile = `${rootPath}/public/speech/${fileName}`;
-//     // This example requires environment letiables named "SPEECH_KEY" and "SPEECH_REGION"
-//     const speechConfig = SpeechConfig.fromSubscription(
-//       process.env.SPEECH_KEY!,
-//       process.env.SPEECH_REGION!
-//     );
-//     const audioConfig = AudioConfig.fromAudioFileOutput(audioFile);
-
-//     // The language of the voice that speaks.
-//     speechConfig.speechSynthesisVoiceName = voice as string;
-
-//     // Create the speech synthesizer.
-//     let synthesizer = new SpeechSynthesizer(speechConfig, audioConfig);
-
-//     // 文本保存到本地
-//     // 转换文本到语音，保存到本地
-//     const xmlPath = process.cwd() + "/public/speech/ssml.xml";
-//     const xml = fs.readFileSync(xmlPath, "utf8");
-
-//     synthesizer.speakTextAsync(
-//       // synthesizer.speakSsmlAsync(
-//       text as string,
-//       // xml,
-//       async function (result) {
-//         if (result.reason === ResultReason.SynthesizingAudioCompleted) {
-//           logger.debug("synthesis finished.");
-//           await createLocalTextFile(fileTitle, text);
-//           await saveSpeechAndText(fileTitle, voice);
-//           setState("SpeechSynthesis", "finished");
-//         } else {
-//           setState("SpeechSynthesis", "canceled");
-//           logger.error(
-//             `Speech synthesis canceled, ${result.errorDetails} Did you set the speech resource key and region values?`
-//           );
-//         }
-//         synthesizer.close();
-//         // synthesizer = null;
-//       },
-//       function (err) {
-//         setState("SpeechSynthesis", "error");
-//         // console.trace("err - " + err);
-//         logger.error(`Error: ${err}`);
-//         synthesizer.close();
-//         // synthesizer = null;
-//       }
-//     );
-//     logger.debug(`Now synthesizing to: ${audioFile}`);
-//     setState("SpeechSynthesis", "started");
-//     return response("synthesizing", fileName, 200);
-//   } catch (error) {
-//     logger.error(`Error: ${error}`);
-//     return response("Internal Server Error", "", 500);
-//   }
-// }
-
 export async function POST(request: NextRequest) {
   try {
     let { filename, language, sectionPreview, sections, voice } =
       await request.json();
 
+    if (!sections || sections.length === 0)
+      return response("No content", "", 400);
+    const langCodeSplit = sections[0].voice.Locale.split("-");
+    const lang = langCodeSplit[0] + "-" + langCodeSplit[1].toUpperCase();
+
     const speechTemplateStart = `
-<speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="zh-CN">`;
+<speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="${lang}">`;
 
     const speechTemplateEnd = `</speak>`;
 
@@ -101,7 +37,9 @@ export async function POST(request: NextRequest) {
     filename = filename || `tts-${new Date().getTime()}`;
 
     const rootPath = process.cwd();
-    const dir = sectionPreview ? "/public/speech/temp/" : "/public/speech/";
+    const dir = sectionPreview
+      ? "/public/speech/section/"
+      : "/public/speech/chapter/";
     // 创建xml文件
     const patss = `${rootPath}${dir}${filename}.xml`;
     await fs.writeFile(patss, ssmlXml);

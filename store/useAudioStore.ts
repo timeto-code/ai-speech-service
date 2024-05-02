@@ -1,4 +1,3 @@
-import { Speech } from "@prisma/client";
 import { create } from "zustand";
 
 type AudioStore = {

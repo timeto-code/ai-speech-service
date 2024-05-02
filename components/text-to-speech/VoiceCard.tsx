@@ -1,27 +1,13 @@
 "use client";
 
-import { Voice } from "@prisma/client";
-import {
-  Check,
-  ChevronDown,
-  ChevronLeft,
-  ChevronUp,
-  Ellipsis,
-} from "lucide-react";
-import Image from "next/image";
-import { useState } from "react";
-import { IoIosClose } from "react-icons/io";
-import { Button } from "./ui/button";
-import { link } from "fs";
-import { Separator } from "./ui/separator";
 import { useVoiceStore } from "@/store/useVoiceStore";
-import { useSSMLStyleStore } from "@/store/useSSMLStore";
-
-import "../styles/DivEditor.css";
-
-interface VoiceCardProps {
-  voice: Voice;
-}
+import { Voice } from "@prisma/client";
+import { Ellipsis } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import "../../styles/DivEditor.css";
+import { Button } from "../ui/button";
+import { loadRegionCodeMap } from "@/actions/TTS";
 
 // angrychat - 生气聊天
 // cheerful - 欢快
@@ -275,6 +261,10 @@ const rolePlayEmoji: Record<string, { emoji: string; name: string }> = {
   },
 };
 
+interface VoiceCardProps {
+  voice: Voice;
+}
+
 const VoiceCard = ({ voice }: VoiceCardProps) => {
   const [showDetail, setShowDetail] = useState(false);
 
@@ -320,6 +310,7 @@ const VoiceCard = ({ voice }: VoiceCardProps) => {
                 }
                 alt=""
                 fill
+                sizes="24"
                 className="object-contain"
               />
             </div>
@@ -362,7 +353,6 @@ const VoiceCard = ({ voice }: VoiceCardProps) => {
                         key={style}
                         className="rounded-full pl-[1px] pr-[6px] bg-slate-300/50 hover:bg-zinc-300/90 m-[2px]"
                         onClick={() => {
-                          // useSSMLStyleStore.setState({ style });
                           handleStyle(style);
                         }}
                       >
