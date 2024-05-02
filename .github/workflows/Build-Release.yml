@@ -59,6 +59,12 @@ jobs:
           cd Microsoft-Speech-Service
           npx prisma db push
 
+      - name: check folder
+        run: |
+          cd Microsoft-Speech-Service
+          ls -la 
+          ls -la public
+
       - name: Zip production artifacts
         run: |
           cd Microsoft-Speech-Service
