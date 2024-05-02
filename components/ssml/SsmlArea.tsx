@@ -76,7 +76,7 @@ const SsmlArea = () => {
   useEffect(() => {
     if (!scrollDiv.current) return;
     setIsScrollBarVisible(
-      scrollDiv.current!.scrollHeight > scrollDiv.current!.clientHeight
+      scrollDiv.current.scrollHeight > scrollDiv.current.clientHeight
     );
   }, [newSectionAction]);
 

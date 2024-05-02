@@ -20,8 +20,13 @@ export async function POST(request: NextRequest) {
     let { filename, language, sectionPreview, sections, voice } =
       await request.json();
 
+    if (!sections || sections.length === 0)
+      return response("No content", "", 400);
+    const langCodeSplit = sections[0].voice.Locale.split("-");
+    const lang = langCodeSplit[0] + "-" + langCodeSplit[1].toUpperCase();
+
     const speechTemplateStart = `
-<speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="zh-CN">`;
+<speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="${lang}">`;
 
     const speechTemplateEnd = `</speak>`;
 
@@ -32,7 +37,9 @@ export async function POST(request: NextRequest) {
     filename = filename || `tts-${new Date().getTime()}`;
 
     const rootPath = process.cwd();
-    const dir = sectionPreview ? "/public/speech/temp/" : "/public/speech/";
+    const dir = sectionPreview
+      ? "/public/speech/section/"
+      : "/public/speech/chapter/";
     // 创建xml文件
     const patss = `${rootPath}${dir}${filename}.xml`;
     await fs.writeFile(patss, ssmlXml);

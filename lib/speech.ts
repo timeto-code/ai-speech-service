@@ -9,8 +9,12 @@ export const saveSpeechAndXml = async (
     data: {
       title: filename,
       voice,
-      speech_url: `/speech${sectionPreview ? "/temp" : ""}/${filename}.wav`,
-      text_url: `/speech${sectionPreview ? "/temp" : ""}/${filename}.xml`,
+      speech_url: `/speech${
+        sectionPreview ? "/section" : "/chapter"
+      }/${filename}.wav`,
+      text_url: `/speech${
+        sectionPreview ? "/section" : "/chapter"
+      }/${filename}.xml`,
     },
   });
 };

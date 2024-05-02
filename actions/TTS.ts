@@ -9,6 +9,7 @@ import path from "path";
 import os from "os";
 import { exec } from "child_process";
 import logger from "@/lib/logger";
+import { get } from "http";
 
 export const fetchRegionVoiceList = async () => {
   const voiceList = await axios.get(
@@ -92,13 +93,7 @@ export const fetchRegionVoiceList = async () => {
 
 export const getVoiceList = async (language: string, gender: string) => {
   const where = {
-    ...(language === "All" && gender === "All"
-      ? {}
-      : language === "All" && gender !== "All"
-      ? {
-          Gender: gender,
-        }
-      : language !== "All" && gender === "All"
+    ...(gender === "All"
       ? { Locale: { contains: language } }
       : { Locale: { contains: language }, Gender: gender }),
   };
@@ -177,24 +172,76 @@ export const fetchLanguageList = async () => {
   });
 
   const languages = voiceList.map((item) => {
-    const codeList = item.Locale.split("-");
-    return codeList.length > 1 && codeList[1] ? codeList[1] : ""; // 返回 null 或其他默认值，而非 undefined
+    // const codeList = item.Locale.split("-");
+    // return codeList.length > 1 && codeList[1] ? codeList[1] : ""; // 返回 null 或其他默认值，而非 undefined
+    return item.Locale;
   });
 
   // 过滤掉空字符串
   const filteredLanguages = languages.filter((item) => item);
 
+  // "zh-CN": "汉语",
+  // "zh-CN-guangxi": "汉语 (广西）",
+  // "zh-CN-henan": "汉语 (河南)",
+  // "zh-CN-liaoning": "汉语 (辽宁)",
+  // "zh-CN-shaanxi": "汉语 (陕西)",
+  // "zh-CN-shandong": "汉语 (山东)",
+  // "zh-CN-sichuan": "汉语 (四川)",
+  // "wuu-CN": "汉语 (吴语)",
+  // "yue-CN": "汉语 (粤语)",
+  // "zh-HK": "汉语 (香港)",
+  // "zh-TW": "汉语 (台湾)",
+
   // 删掉CN，HK，TW
-  const removeList = ["CN", "HK", "TW"];
+  const moveList = [
+    "zh-CN",
+    "zh-CN-guangxi",
+    "zh-CN-henan",
+    "zh-CN-liaoning",
+    "zh-CN-shaanxi",
+    "zh-CN-shandong",
+    "zh-CN-sichuan",
+    "wuu-CN",
+    "yue-CN",
+    "zh-HK",
+    "zh-TW",
+    "en-HK",
+  ];
   const filteredLanguages2 = filteredLanguages.filter(
-    (item) => !removeList.includes(item)
+    (item) => !moveList.includes(item)
   );
 
   // 创建一个 Set 来去重，现在数组中不会有 undefined 或 null
-  const languageSet = ["CN", "HK", "TW", ...new Set(filteredLanguages2)];
+  const languageSet = [...moveList, ...new Set(filteredLanguages2)];
+
+  const languages2 = voiceList.map((item) => {
+    return item.Locale;
+  });
+
+  const languages2Set = new Set(languages2);
 
   const patss = process.cwd() + "/public/languageList.json";
-  await fs.writeFile(patss, JSON.stringify([...languageSet]));
+  await fs.writeFile(patss, JSON.stringify([...languages2Set]));
 
   return languageSet;
+};
+
+// 语言代码映射表
+export const loadLanguageCodeMap = async () => {
+  const languageList = await fs.readFile(
+    process.cwd() + "/public/LanguageCode.json",
+    "utf-8"
+  );
+
+  return JSON.parse(languageList);
+};
+
+// 国内地区拼音映射表
+export const loadRegionCodeMap = async () => {
+  const regionList = await fs.readFile(
+    process.cwd() + "/public/RegionCode.json",
+    "utf-8"
+  );
+
+  return JSON.parse(regionList);
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { getVoiceList } from "@/actions/TTS";
+import { getVoiceList, loadRegionCodeMap } from "@/actions/TTS";
 import { useVoiceStore } from "@/store/useVoiceStore";
 import { Voice } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";

@@ -13,7 +13,7 @@ import * as React from "react";
 
 interface ComboboxProps {
   boxLabel: string;
-  options: { value: string; label: string }[];
+  options: OptionObject[];
   value: string;
   setValue: (value: string) => void;
   isLoading: boolean;

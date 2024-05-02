@@ -15,7 +15,11 @@ const MenuButton = ({ label, onClick, className }: Props) => {
   const status = useTTS_SynthesisButton((state) => state.status);
   const language = useVoiceStore((state) => state.language);
 
-  if (label === "声调" && language !== "CN") {
+  if (
+    label === "声调" &&
+    !language.includes("zh") &&
+    !language.includes("CN")
+  ) {
     return null;
   }
 

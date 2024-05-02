@@ -34,8 +34,12 @@ const VoiceConfig = () => {
           <Spinner className="absolute top-3 left-[28%] h-4 w-4 animate-spin text-[#339900] mr-2" />
         )}
       </div>
-      <LanguageCombobox isLoading={isLoading} />
-      <GenderCombobox isLoading={isLoading} />
+      <div className="h-10">
+        <LanguageCombobox isLoading={isLoading} />
+      </div>
+      <div className="h-10">
+        <GenderCombobox isLoading={isLoading} />
+      </div>
       <VoiceList />
     </div>
   );

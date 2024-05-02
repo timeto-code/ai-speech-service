@@ -4,13 +4,10 @@ import { useVoiceStore } from "@/store/useVoiceStore";
 import { Voice } from "@prisma/client";
 import { Ellipsis } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../../styles/DivEditor.css";
 import { Button } from "../ui/button";
-
-interface VoiceCardProps {
-  voice: Voice;
-}
+import { loadRegionCodeMap } from "@/actions/TTS";
 
 // angrychat - 生气聊天
 // cheerful - 欢快
@@ -264,6 +261,10 @@ const rolePlayEmoji: Record<string, { emoji: string; name: string }> = {
   },
 };
 
+interface VoiceCardProps {
+  voice: Voice;
+}
+
 const VoiceCard = ({ voice }: VoiceCardProps) => {
   const [showDetail, setShowDetail] = useState(false);
 
@@ -309,6 +310,7 @@ const VoiceCard = ({ voice }: VoiceCardProps) => {
                 }
                 alt=""
                 fill
+                sizes="24"
                 className="object-contain"
               />
             </div>
