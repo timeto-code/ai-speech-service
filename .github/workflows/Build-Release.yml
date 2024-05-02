@@ -38,21 +38,26 @@ jobs:
 
       - name: Build
         run: |
-          npx prisma generate
           npm run build
 
       - name: Archive production artifacts
         run: |
           mkdir Microsoft-Speech-Service
           cd Microsoft-Speech-Service
-          cp ../.env.template .env.production
           cp -r ../.next .next
           cp -r ../public public
           cp ../next.config.mjs next.config.mjs
           cp ../package.json package.json
           cp ../package-lock.json package-lock.json
+          cp ../.env.template .env
+          cp ../prisma prisma
           cp ../README.md README.md
           cp ../LICENSE LICENSE
+
+      - name: Install SQLiteDB
+        run: |
+          cd Microsoft-Speech-Service
+          npx prisma db push
 
       - name: Zip production artifacts
         run: |
