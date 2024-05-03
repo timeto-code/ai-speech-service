@@ -53,7 +53,7 @@ const AudioPlayer = () => {
         animationRef.current = requestAnimationFrame(whilePlaying);
       }
     }
-  }, [isPlaying, whilePlaying]);
+  }, [isPlaying, whilePlaying, src]);
 
   // 拖动进度条
   const changeRange = (e: React.ChangeEvent<HTMLInputElement>) => {
