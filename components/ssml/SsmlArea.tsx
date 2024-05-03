@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 
 const SsmlArea = () => {
   const voice = useVoiceStore((state) => state.voice);
+  const voiceRefreshed = useVoiceStore((state) => state.voiceRefreshed);
   const sections = useSsmlSectionsStore((state) => state.sections);
   // 设置滚动条和内容的间隙
   const scrollDiv = useRef<HTMLDivElement>(null);
@@ -70,7 +71,7 @@ const SsmlArea = () => {
         };
       });
     }
-  }, [voice]);
+  }, [voice, voiceRefreshed]);
 
   // 设置滚动条和内容的间距
   useEffect(() => {

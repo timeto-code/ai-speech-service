@@ -152,6 +152,8 @@ const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
           contentEditable
           onPaste={handlePaste}
           onFocus={() => {
+            console.log(`section`, section);
+
             useSSMLStore.setState({ currentVoceSection: section });
           }}
         />

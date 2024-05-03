@@ -7,6 +7,7 @@ type VoiceStore = {
   language: string;
   gender: string;
   voiceListRefreshed: number;
+  voiceRefreshed: number;
 };
 
 export const useVoiceStore = create<VoiceStore>((set) => ({
@@ -15,4 +16,5 @@ export const useVoiceStore = create<VoiceStore>((set) => ({
   language: "zh-CN",
   gender: "All",
   voiceListRefreshed: new Date().getTime(),
+  voiceRefreshed: new Date().getTime(),
 }));

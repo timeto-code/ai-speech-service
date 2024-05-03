@@ -7,16 +7,18 @@ import VoiceConfig from "@/components/text-to-speech/VoiceConfig";
 const page = () => {
   return (
     <div className="h-full w-full overflow-auto">
-      <div className="h-full flex max-w-[1024px] min-w-[720px] p-3 mx-auto">
+      <div className="h-full flex max-w-[1024px] min-w-[768px] p-3 mx-auto">
         <div className="h-full mr-3 flex flex-col flex-1 relative">
           <div
-            className="flex items-center gap-2 select-none"
+            className="flex items-center flex-col md:flex-row gap-2 select-none w-full"
             contentEditable={false}
           >
-            <OpenSpeechDir />
-            <SpeechButton />
-            <div className="flex items-center bg-zinc-500/20 rounded-sm pr-2 py-2 pl-3 flex-1">
-              <div className="flex-1 flex items-center h-full">
+            <div className="flex w-full md:w-[156px] h-full gap-2">
+              <OpenSpeechDir />
+              <SpeechButton />
+            </div>
+            <div className="flex items-center bg-zinc-500/20 rounded-sm pr-2 py-2 pl-3 w-full h-full">
+              <div className="flex items-center h-full w-full">
                 <AudioPlayer />
               </div>
             </div>

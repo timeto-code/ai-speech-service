@@ -47,3 +47,5 @@ languageList.json
 # db
 prisma/migrations/
 db/*
+
+bug.txt

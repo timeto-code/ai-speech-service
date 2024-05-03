@@ -26,6 +26,15 @@ function streamFile(
   });
 }
 
+function getContentTypeByExtension(ext: string) {
+  const typeMap = {
+    ".mp3": "audio/mpeg",
+    ".wav": "audio/wav",
+    // 添加其他音频类型
+  } as Record<string, string>;
+  return typeMap[ext] || "application/octet-stream";
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { filename: string } }
@@ -42,22 +51,27 @@ export async function GET(
   );
 
   try {
-    await fs.promises.access(filePath);
+    const stats = await fs.promises.stat(filePath);
+    const data: ReadableStream<Uint8Array> = streamFile(filePath);
+
+    // 根据文件扩展名设置合适的 content-type
+    const contentType = getContentTypeByExtension(path.extname(filename));
+
+    const res = new NextResponse(data, {
+      status: 200,
+      headers: new Headers({
+        "content-disposition": `attachment; filename=${path.basename(
+          filePath
+        )}`,
+        "content-type": contentType,
+        "content-length": stats.size.toString(),
+        "accept-ranges": "bytes",
+      }),
+    });
+
+    return res;
   } catch (error) {
     logger.error(`File not found: ${filePath}`);
     return NextResponse.json({ error: "File not found" }, { status: 404 });
   }
-
-  const data: ReadableStream<Uint8Array> = streamFile(filePath);
-
-  const res = new NextResponse(data, {
-    status: 200,
-    headers: new Headers({
-      "content-disposition": `attachment; filename=${path.basename(filePath)}`,
-      "content-type": "application/iso",
-      // "content-length": stats.size + "",
-    }),
-  });
-
-  return res;
 }
