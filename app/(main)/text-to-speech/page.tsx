@@ -4,6 +4,7 @@ import CancelButton from "@/components/text-to-speech/CancelButton";
 import OpenSpeechDir from "@/components/text-to-speech/OpenSpeechDir";
 import SpeechButton from "@/components/text-to-speech/SpeechButton";
 import VoiceConfig from "@/components/text-to-speech/VoiceConfig";
+import { Toaster } from "@/components/ui/sonner";
 
 const page = () => {
   return (
@@ -40,6 +41,7 @@ const page = () => {
           <VoiceConfig />
         </div>
       </div>
+      <Toaster />
     </div>
   );
 };
