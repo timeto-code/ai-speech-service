@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchRegionVoiceList } from "@/actions/TTS";
+import { fetchRegionVoiceList } from "@/actions/api/tts";
 import { useVoiceStore } from "@/store/useVoiceStore";
 import { useState } from "react";
 import { Button } from "../ui/button";
@@ -12,6 +12,19 @@ import VoiceList from "./VoiceList";
 const VoiceConfig = () => {
   const [isLoading, setIsLoading] = useState(false);
 
+  const handleClick = async () => {
+    setIsLoading(true);
+    const res = await fetchRegionVoiceList();
+    if (res.code === 0) {
+      useVoiceStore.setState({
+        voiceListRefreshed: new Date().getTime(),
+      });
+    } else {
+      // 提示错误
+    }
+    setIsLoading(false);
+  };
+
   return (
     <div className="w-full h-full flex flex-col gap-2">
       <div className="relative h-10">
@@ -19,14 +32,7 @@ const VoiceConfig = () => {
           variant="outline"
           className="w-full relative"
           disabled={isLoading}
-          onClick={async () => {
-            setIsLoading(true);
-            await fetchRegionVoiceList();
-            useVoiceStore.setState({
-              voiceListRefreshed: new Date().getTime(),
-            });
-            setIsLoading(false);
-          }}
+          onClick={handleClick}
         >
           <span>更新声音列表</span>
         </Button>

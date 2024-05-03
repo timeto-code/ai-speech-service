@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchLanguageList, loadLanguageCodeMap } from "@/actions/TTS";
+import { fetchLanguageList, fetchLanguageOptions } from "@/actions/api/tts";
 import { useVoiceStore } from "@/store/useVoiceStore";
 import { useEffect, useState } from "react";
 import Combobox from "../Combobox";
@@ -17,17 +17,17 @@ const LanguageCombobox = ({ isLoading }: Props) => {
 
   useEffect(() => {
     const fetchLanguage = async () => {
-      const codeMap = await loadLanguageCodeMap();
-      if (!codeMap) return;
-
-      const res = await fetchLanguageList();
-
-      const languageList = res.map((item) => ({
-        label: codeMap[item],
-        value: item,
-      }));
-
-      setLanguages(languageList);
+      const resLang = await fetchLanguageList();
+      if (resLang.code === 0 && resLang.data) {
+        const resOptions = await fetchLanguageOptions(resLang.data);
+        if (resOptions.code === 0 && resOptions.data) {
+          setLanguages(resOptions.data);
+        } else {
+          // 提示错误
+        }
+      } else {
+        // 提示错误
+      }
     };
 
     fetchLanguage();

@@ -136,6 +136,8 @@ const AudioPlayer = () => {
 
   useEffect(() => {
     if (src) {
+      handleEnded();
+
       const api = `/api/public/${src}`;
       setSrcApi(api);
     }
@@ -146,7 +148,7 @@ const AudioPlayer = () => {
   }
 
   return (
-    <div className={cn("flex items-center px-1 w-full relative")}>
+    <div className={cn("flex items-center px-1 w-full relative h-full")}>
       <audio
         ref={audioRef}
         src={srcApi}

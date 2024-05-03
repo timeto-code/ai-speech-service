@@ -1,12 +1,12 @@
 "use client";
 
-import { getVoiceList, loadRegionCodeMap } from "@/actions/TTS";
+import { fetchVoiceByfilter } from "@/actions/api/tts";
+import { cn } from "@/lib/utils";
 import { useVoiceStore } from "@/store/useVoiceStore";
 import { Voice } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
 import Spinner from "./Spinner";
 import VoiceCard from "./VoiceCard";
-import { cn } from "@/lib/utils";
 
 const VoiceList = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -21,8 +21,12 @@ const VoiceList = () => {
   useEffect(() => {
     setIsLoading(true);
     const fetchVoiceList = async () => {
-      const res = await getVoiceList(language, gender);
-      setVoiceList(res);
+      const res = await fetchVoiceByfilter(language, gender);
+      if (res.code === 0 && res.data) {
+        setVoiceList(res.data);
+      } else {
+        // 提示错误
+      }
       setIsLoading(false);
     };
 
@@ -31,9 +35,7 @@ const VoiceList = () => {
 
   useEffect(() => {
     if (!scrollDiv.current) return;
-    setIsScrollBarVisible(
-      scrollDiv.current.scrollHeight > scrollDiv.current.clientHeight
-    );
+    setIsScrollBarVisible(scrollDiv.current.scrollHeight > scrollDiv.current.clientHeight);
   }, [scrollDiv.current]);
 
   if (isLoading) {
@@ -47,10 +49,7 @@ const VoiceList = () => {
   return (
     <div
       ref={scrollDiv}
-      className={cn(
-        "h-full flex-1 overflow-auto",
-        isScrollBarVisible ? "pr-1" : ""
-      )}
+      className={cn("h-full flex-1 overflow-auto", isScrollBarVisible ? "pr-1" : "")}
     >
       {voiceList.length > 0 ? (
         <div className="flex flex-col gap-2">

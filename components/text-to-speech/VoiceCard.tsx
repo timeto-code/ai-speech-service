@@ -7,6 +7,8 @@ import Image from "next/image";
 import { useState } from "react";
 import "../../styles/DivEditor.css";
 import { Button } from "../ui/button";
+import { useSSMLStore } from "@/store/useSSMLStore";
+import BadgeButton from "../BadgeButton";
 
 // angrychat - 生气聊天
 // cheerful - 欢快
@@ -266,6 +268,7 @@ interface VoiceCardProps {
 
 const VoiceCard = ({ voice }: VoiceCardProps) => {
   const [showDetail, setShowDetail] = useState(false);
+  const currentVoce = useSSMLStore((state) => state.currentVoceSection.voice);
 
   const handleStyle = (style: string) => {
     // 获取选中的文本
@@ -279,7 +282,7 @@ const VoiceCard = ({ voice }: VoiceCardProps) => {
     span.textContent = `${selectedText}` || "";
     span.className = "yu-qi";
     span.setAttribute("style-name", style);
-    span.setAttribute("data-before", `[${StylesEmoji[style].name}`);
+    span.setAttribute("data-before", `[${StylesEmoji[style]?.name || style}`);
     span.setAttribute("data-after", `]`);
     // span.contentEditable = "false";
 
@@ -318,6 +321,9 @@ const VoiceCard = ({ voice }: VoiceCardProps) => {
               className="p-0 h-5"
               onClick={() => {
                 useVoiceStore.setState({ voice: voice });
+                useVoiceStore.setState({
+                  voiceRefreshed: new Date().getTime(),
+                });
                 useVoiceStore.setState({ currentVoice: voice.ShortName });
               }}
             >
@@ -348,20 +354,20 @@ const VoiceCard = ({ voice }: VoiceCardProps) => {
                   <div className="text-sm text-nowrap">语气</div>
                   <div>
                     {JSON.parse(voice.StyleList).map((style: string) => (
-                      <button
+                      <BadgeButton
                         key={style}
-                        className="rounded-full pl-[1px] pr-[6px] bg-slate-300/50 hover:bg-zinc-300/90 m-[2px]"
-                        onClick={() => {
+                        disabled={currentVoce?.ShortName !== voice.ShortName}
+                        handleClick={() => {
                           handleStyle(style);
                         }}
                       >
                         <div className="flex items-center">
-                          {StylesEmoji[style].emoji}
+                          {StylesEmoji[style]?.emoji}
                           <span className="text-xs">
-                            {StylesEmoji[style].name}
+                            {StylesEmoji[style]?.name || style}
                           </span>
                         </div>
-                      </button>
+                      </BadgeButton>
                     ))}
                   </div>
                 </div>
@@ -372,17 +378,18 @@ const VoiceCard = ({ voice }: VoiceCardProps) => {
                   <span className="text-sm text-nowrap">角色</span>
                   <div>
                     {JSON.parse(voice.RolePlayList).map((role: string) => (
-                      <button
+                      <BadgeButton
+                        handleClick={() => {}}
                         key={role}
-                        className="rounded-full pl-[1px] pr-1 bg-slate-300/50 hover:bg-zinc-300/90 m-[2px]"
+                        disabled={currentVoce?.ShortName !== voice.ShortName}
                       >
-                        <div className="flex items-center">
-                          {/* {rolePlayEmoji[role].emoji} */}
-                          <span className="text-xs ml-1">
-                            {rolePlayEmoji[role].name}
+                        <div className="flex items-center pl-1">
+                          {/* {rolePlayEmoji[role]?.emoji} */}
+                          <span className="text-xs">
+                            {rolePlayEmoji[role]?.name || role}
                           </span>
                         </div>
-                      </button>
+                      </BadgeButton>
                     ))}
                   </div>
                 </div>
@@ -394,14 +401,15 @@ const VoiceCard = ({ voice }: VoiceCardProps) => {
                   <div className="h-24 overflow-auto">
                     {JSON.parse(voice.SecondaryLocaleList).map(
                       (locale: string) => (
-                        <button
+                        <BadgeButton
+                          handleClick={() => {}}
                           key={locale}
-                          className="rounded-full pl-[1px] pr-1 bg-slate-300/50 hover:bg-zinc-300/90 m-[2px]"
+                          disabled={currentVoce?.ShortName !== voice.ShortName}
                         >
-                          <div className="flex items-center">
-                            <span className="text-xs ml-1">{locale}</span>
+                          <div className="flex items-center pl-1">
+                            <span className="text-xs">{locale}</span>
                           </div>
-                        </button>
+                        </BadgeButton>
                       )
                     )}
                   </div>
