@@ -97,9 +97,7 @@ const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
     if (!contentArea.current?.innerHTML) return;
     if (!section.voice) return;
 
-    speechSynthesis(true, [
-      { ...section, htmlContent: contentArea.current.innerHTML },
-    ]);
+    speechSynthesis(true, [{ ...section, htmlContent: contentArea.current.innerHTML }]);
   };
 
   const handlePlay = () => {
@@ -129,10 +127,7 @@ const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
   return (
     <div className="border border-zinc-500/20 rounded-sm">
       <div className="bg-zinc-500/10 border-zinc-500/20 flex items-center h-9 px-2">
-        <span
-          className={cn("text-sky-500 w-24 select-none")}
-          contentEditable={false}
-        >
+        <span className={cn("text-sky-500 w-24 select-none")} contentEditable={false}>
           {section?.voice?.LocalName ?? "未选择声音"}
         </span>
         <EditorMenu

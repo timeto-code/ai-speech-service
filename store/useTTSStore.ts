@@ -1,4 +1,4 @@
-import { ttsSynthesisStatusType } from "@/lib/state";
+import { ttsSynthesisStatusType } from "@/util/state";
 import { create } from "zustand";
 
 type TTS_SynthesisButton = {

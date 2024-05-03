@@ -1,10 +1,10 @@
-import { fetchLatestSpeech } from "@/actions/TTS";
+import { fetchLatestSpeech } from "@/actions/api/tts";
 import { ttsSynthesisReqDTO } from "@/dto";
 import { useAudioPlayerStore } from "@/store/useAudioPlayerStore";
 import { SsmlSection, useSsmlSectionsStore, useSsmlSynthesisStore } from "@/store/useSSMLStore";
 import { useTTS_SynthesisButton } from "@/store/useTTSStore";
 import axios from "axios";
-import { ttsSynthesisStatusType } from "./state";
+import { ttsSynthesisStatusType } from "../util/state";
 
 export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlSection[]) => {
   const state = useTTS_SynthesisButton.getState();

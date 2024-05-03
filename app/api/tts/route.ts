@@ -1,8 +1,9 @@
 import { responseCodeMessageMap, ttsSynthesisReqDTO, ttsSynthesisResDTO } from "@/dto";
-import logger, { root_dir } from "@/lib/logger";
-import { saveSpeechAndXml } from "@/lib/speech";
-import { generateSSML } from "@/lib/ssml";
-import { ttsSynthesisStatus } from "@/lib/state";
+import { chapterDir, sectionDir } from "@/util/config";
+import logger from "@/util/logger";
+import { createSpeech } from "@/actions/prisma/speech";
+import { generateSSML } from "@/util/ssml";
+import { ttsSynthesisStatus } from "@/util/state";
 import fs from "fs/promises";
 import {
   AudioConfig,
@@ -18,9 +19,7 @@ const ttsSynthesis = async (data: ttsSynthesisReqDTO) => {
 
   // 生成文件路径
   const filename = `tts-${new Date().getTime()}`;
-  const dir = sectionPreview
-    ? `${root_dir}/public/speech/section/${filename}`
-    : `${root_dir}/public/speech/chapter/${filename}`;
+  const dir = sectionPreview ? `${sectionDir}${filename}` : `${chapterDir}${filename}`;
   const xmlDir = `${dir}.xml`; // SSML 文件路径
   const wavDir = `${dir}.wav`; // 音频文件路径
 
@@ -66,7 +65,7 @@ const ttsSynthesis = async (data: ttsSynthesisReqDTO) => {
         synthesizer.close();
         try {
           /** 保存 wav、xml 文件路径到数据库 */
-          await saveSpeechAndXml(filename, sections[0].voice!.ShortName, sectionPreview);
+          await createSpeech(filename, sections[0].voice!.ShortName, sectionPreview);
           ttsSynthesisStatus.finished();
         } catch (error) {
           ttsSynthesisStatus.error();
@@ -106,10 +105,10 @@ export async function POST(request: NextRequest) {
     // 语音合成开始
     const { wavDir, filename } = await ttsSynthesis({ sectionPreview, sections });
 
-    logger.debug(`Speech synthesis start: ${wavDir}`);
+    logger.debug(`${responseCodeMessageMap[2]}: ${wavDir}`);
     return sendResponse({ code: 2, data: filename });
   } catch (error) {
-    logger.error(`Internal Server Error: ${error}`);
+    logger.error(`${responseCodeMessageMap[3]}: ${error}`);
     return sendResponse({ code: 3 });
   }
 }

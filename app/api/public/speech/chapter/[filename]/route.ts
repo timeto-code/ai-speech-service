@@ -1,38 +1,21 @@
-import logger from "@/lib/logger";
-import { NextRequest, NextResponse } from "next/server";
+import { getLocalAudioResDTO, responseCodeMessageMap } from "@/dto";
+import { chapterDir } from "@/util/config";
+import logger from "@/util/logger";
+import { getContentTypeByExtension, streamFile } from "@/util/stream";
 import fs from "fs";
+import { NextRequest, NextResponse } from "next/server";
 import path from "path";
-import { ReadableOptions } from "stream";
 
-function streamFile(path: string, options?: ReadableOptions): ReadableStream<Uint8Array> {
-  const downloadStream = fs.createReadStream(path, options);
-
-  return new ReadableStream({
-    start(controller) {
-      downloadStream.on("data", (chunk: Buffer) => controller.enqueue(new Uint8Array(chunk)));
-      downloadStream.on("end", () => controller.close());
-      downloadStream.on("error", (error: NodeJS.ErrnoException) => controller.error(error));
-    },
-    cancel() {
-      downloadStream.destroy();
-    },
-  });
-}
-
-function getContentTypeByExtension(ext: string) {
-  const typeMap = {
-    ".mp3": "audio/mpeg",
-    ".wav": "audio/wav",
-    // 添加其他音频类型
-  } as Record<string, string>;
-  return typeMap[ext] || "application/octet-stream";
-}
+// 发送响应
+const sendResponse = (res: getLocalAudioResDTO) => {
+  res.message = responseCodeMessageMap[res.code];
+  return NextResponse.json({ ...res }, { status: 200 });
+};
 
 export async function GET(request: NextRequest, { params }: { params: { filename: string } }) {
-  logger.debug("GET /api/public/speech/chapter/[filename]");
   const { filename } = params;
   // 读取本地音频文件，返回给前端
-  const filePath = path.resolve(process.cwd(), "public", "speech", "chapter", filename);
+  const filePath = path.resolve(chapterDir, filename);
 
   try {
     const stats = await fs.promises.stat(filePath);
@@ -53,7 +36,8 @@ export async function GET(request: NextRequest, { params }: { params: { filename
 
     return res;
   } catch (error) {
-    logger.error(`File not found: ${filePath}`);
-    return NextResponse.json({ error: "File not found" }, { status: 404 });
+    logger.error(`读取本地音频失败: ${filePath}`);
+    // return sendResponse({ code: 4 });
+    return NextResponse.json({ error: "读取本地音频失败" }, { status: 404 });
   }
 }

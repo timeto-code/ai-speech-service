@@ -1,4 +1,4 @@
-import { ttsSynthesisStatus } from "@/lib/state";
+import { ttsSynthesisStatus } from "@/util/state";
 
 /**
  * SSE 轮询检出语音合成状态
