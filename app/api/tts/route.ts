@@ -58,6 +58,7 @@ const ttsSynthesis = async (data: ttsSynthesisReqDTO) => {
   /** 创建语音合成器 */
   const synthesizer = new SpeechSynthesizer(speechConfig, audioConfig);
   /** 执行语音合成 */
+  ttsSynthesisStatus.start();
   synthesizer.speakSsmlAsync(
     xml,
     async function (result) {
@@ -105,9 +106,7 @@ export async function POST(request: NextRequest) {
     // 语音合成开始
     const { wavDir, filename } = await ttsSynthesis({ sectionPreview, sections });
 
-    ttsSynthesisStatus.start();
     logger.debug(`Speech synthesis start: ${wavDir}`);
-
     return sendResponse({ code: 2, data: filename });
   } catch (error) {
     logger.error(`Internal Server Error: ${error}`);
@@ -115,29 +114,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * SSE 轮询检出语音合成状态
- */
-export async function GET() {
-  let responseStream = new TransformStream();
-  const writer = responseStream.writable.getWriter();
-  const encoder = new TextEncoder();
+export async function GET(request: NextRequest) {
+  const action = request.nextUrl.searchParams.get("action");
 
-  // 循环检查状态
-  const interval = setInterval(() => {
-    const isClosed = ttsSynthesisStatus.isClosed();
-    if (isClosed) {
-      clearInterval(interval);
-      const message = ttsSynthesisStatus.status;
-      writer.write(encoder.encode(`data: ${message}\n\n`));
-    }
-  }, 1000);
-
-  return new Response(responseStream.readable, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      Connection: "keep-alive",
-      "Cache-Control": "no-cache, no-transform",
-    },
-  });
+  if (action === "CancelSynthesis") {
+    ttsSynthesisStatus.terminated();
+    return NextResponse.json({ code: 2 });
+  }
 }

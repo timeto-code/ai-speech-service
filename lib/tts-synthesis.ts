@@ -1,10 +1,10 @@
 import { fetchLatestSpeech } from "@/actions/TTS";
+import { ttsSynthesisReqDTO } from "@/dto";
 import { useAudioPlayerStore } from "@/store/useAudioPlayerStore";
 import { SsmlSection, useSsmlSectionsStore, useSsmlSynthesisStore } from "@/store/useSSMLStore";
 import { useTTS_SynthesisButton } from "@/store/useTTSStore";
 import axios from "axios";
 import { ttsSynthesisStatusType } from "./state";
-import { ttsSynthesisReqDTO } from "@/dto";
 
 export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlSection[]) => {
   const state = useTTS_SynthesisButton.getState();
@@ -33,34 +33,42 @@ export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlS
   if (res.status === 200) {
     console.log("res.data", res.data);
 
-    const sse = new EventSource("/api/tts");
+    const sse = new EventSource(`/api/tts/ees?_=${new Date().getTime()}`);
 
     sse.onmessage = async (event) => {
       const sseData = event.data as ttsSynthesisStatusType;
       state.setStatus(sseData);
       sse.close();
-      if (sseData === "finished") {
-        const speech = await fetchLatestSpeech();
-        if (speech) {
-          useAudioPlayerStore.setState({ src: speech.speech_url });
-          if (sectionSynthesis) {
-            useSsmlSectionsStore.setState((state) => {
-              return {
-                sections: state.sections.map((s) => {
-                  if (s.id === section![0].id) {
-                    return {
-                      ...s,
-                      url: speech.speech_url,
-                    };
-                  }
-                  return s;
-                }),
-              };
-            });
+
+      switch (sseData) {
+        case "finished":
+          const speech = await fetchLatestSpeech();
+          if (speech) {
+            useAudioPlayerStore.setState({ src: speech.speech_url });
+            if (sectionSynthesis) {
+              useSsmlSectionsStore.setState((state) => {
+                return {
+                  sections: state.sections.map((s) => {
+                    if (s.id === section![0].id) {
+                      return {
+                        ...s,
+                        url: speech.speech_url,
+                      };
+                    }
+                    return s;
+                  }),
+                };
+              });
+            }
           }
-        }
-      } else {
-        console.log("Error:", event.data);
+          break;
+
+        case "terminated":
+          break;
+
+        default:
+          console.log("Error:", event.data);
+          break;
       }
     };
 

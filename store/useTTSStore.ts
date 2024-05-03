@@ -3,30 +3,32 @@ import { create } from "zustand";
 
 type TTS_SynthesisButton = {
   status: ttsSynthesisStatusType;
+  isPending: boolean;
+  isCanceled: boolean;
   setStatus: (status: ttsSynthesisStatusType) => void;
   setStatusPending: () => void;
   setStatusFinished: () => void;
   setStatusCanceled: () => void;
   setStatusError: () => void;
-  isPending: boolean;
 };
 
 export const useTTS_SynthesisButton = create<TTS_SynthesisButton>((set) => ({
   status: "finished",
+  isPending: false,
+  isCanceled: false,
   setStatus(status) {
     set({ status, isPending: status === "pending" });
   },
   setStatusPending() {
-    set({ status: "pending", isPending: true });
+    set({ status: "pending", isPending: true, isCanceled: false });
   },
   setStatusFinished() {
-    set({ status: "finished", isPending: false });
+    set({ status: "finished", isPending: false, isCanceled: false });
   },
   setStatusCanceled() {
-    set({ status: "canceled", isPending: false });
+    set({ status: "canceled", isPending: false, isCanceled: true });
   },
   setStatusError() {
-    set({ status: "error", isPending: false });
+    set({ status: "error", isPending: false, isCanceled: false });
   },
-  isPending: false,
 }));
