@@ -8,7 +8,6 @@ import fs from "fs/promises";
 import path from "path";
 import os from "os";
 import { exec } from "child_process";
-import logger from "@/lib/logger";
 import { get } from "http";
 
 export const fetchRegionVoiceList = async () => {
@@ -36,9 +35,7 @@ export const fetchRegionVoiceList = async () => {
       true
     ) {
       // 更具 ShortName 判断是否存在
-      const existVoice = existVoices.find(
-        (item) => item.ShortName === voice.ShortName
-      );
+      const existVoice = existVoices.find((item) => item.ShortName === voice.ShortName);
 
       if (existVoice) {
         // 更新已存在的声音
@@ -49,9 +46,7 @@ export const fetchRegionVoiceList = async () => {
             ? JSON.stringify(voice.SecondaryLocaleList)
             : "",
           StyleList: voice.StyleList ? JSON.stringify(voice.StyleList) : "",
-          RolePlayList: voice.RolePlayList
-            ? JSON.stringify(voice.RolePlayList)
-            : "",
+          RolePlayList: voice.RolePlayList ? JSON.stringify(voice.RolePlayList) : "",
         } as Voice;
 
         updatedVoices.push(prismaVoice);
@@ -62,9 +57,7 @@ export const fetchRegionVoiceList = async () => {
             ? JSON.stringify(voice.SecondaryLocaleList)
             : "",
           StyleList: voice.StyleList ? JSON.stringify(voice.StyleList) : "",
-          RolePlayList: voice.RolePlayList
-            ? JSON.stringify(voice.RolePlayList)
-            : "",
+          RolePlayList: voice.RolePlayList ? JSON.stringify(voice.RolePlayList) : "",
           order: index,
         } as Voice;
 
@@ -207,9 +200,7 @@ export const fetchLanguageList = async () => {
     "zh-TW",
     "en-HK",
   ];
-  const filteredLanguages2 = filteredLanguages.filter(
-    (item) => !moveList.includes(item)
-  );
+  const filteredLanguages2 = filteredLanguages.filter((item) => !moveList.includes(item));
 
   // 创建一个 Set 来去重，现在数组中不会有 undefined 或 null
   const languageSet = [...moveList, ...new Set(filteredLanguages2)];
@@ -228,20 +219,14 @@ export const fetchLanguageList = async () => {
 
 // 语言代码映射表
 export const loadLanguageCodeMap = async () => {
-  const languageList = await fs.readFile(
-    process.cwd() + "/public/LanguageCode.json",
-    "utf-8"
-  );
+  const languageList = await fs.readFile(process.cwd() + "/public/LanguageCode.json", "utf-8");
 
   return JSON.parse(languageList);
 };
 
 // 国内地区拼音映射表
 export const loadRegionCodeMap = async () => {
-  const regionList = await fs.readFile(
-    process.cwd() + "/public/RegionCode.json",
-    "utf-8"
-  );
+  const regionList = await fs.readFile(process.cwd() + "/public/RegionCode.json", "utf-8");
 
   return JSON.parse(regionList);
 };

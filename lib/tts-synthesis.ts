@@ -1,32 +1,18 @@
 import { fetchLatestSpeech } from "@/actions/TTS";
 import { useAudioPlayerStore } from "@/store/useAudioPlayerStore";
-import {
-  SsmlSection,
-  useSsmlSectionsStore,
-  useSsmlSynthesisStore,
-} from "@/store/useSSMLStore";
+import { SsmlSection, useSsmlSectionsStore, useSsmlSynthesisStore } from "@/store/useSSMLStore";
 import { useTTS_SynthesisButton } from "@/store/useTTSStore";
 import axios from "axios";
+import { ttsSynthesisStatusType } from "./state";
+import { ttsSynthesisReqDTO } from "@/dto";
 
-type DTO = {
-  filename: string;
-  language: string;
-  sectionPreview: boolean;
-  sections: SsmlSection[];
-  voice: string;
-};
-
-export const speechSynthesis = async (
-  sectionSynthesis: Boolean,
-  section?: SsmlSection[]
-) => {
-  const setStatus = useTTS_SynthesisButton.getState().setStatus;
-  setStatus("pending");
+export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlSection[]) => {
+  const state = useTTS_SynthesisButton.getState();
+  state.setStatusPending();
 
   // 段落转义时，必须传入段落对象
   if (sectionSynthesis && !section) {
-    setStatus("error");
-    return;
+    return state.setStatusError();
   }
 
   // 整体转义时，需要等待段落整合完成
@@ -34,30 +20,26 @@ export const speechSynthesis = async (
     useSsmlSynthesisStore.getState().setStarted();
     await delay(1000);
   }
-  console.log("test");
 
   const data = {
-    filename: "", // 文件名
-    language: "", // SSML 语言
     sectionPreview: sectionSynthesis, // 是否是单个段落的 TTS 请求
-    sections: sectionSynthesis
-      ? section
-      : useSsmlSectionsStore.getState().sections, // SSML 段落数组
-    voice: useSsmlSectionsStore.getState().sections[0].voice?.ShortName || "", // 语音名称，SQLite 数据库操作使用
-  } as DTO;
+    sections: sectionSynthesis ? section : useSsmlSectionsStore.getState().sections, // SSML 段落数组
+  } as ttsSynthesisReqDTO;
 
   // 发送 TTS 请求
   const res = await axios.post("/api/tts", data);
 
   // 请求成功，创建 EventSource
   if (res.status === 200) {
-    const es = new EventSource("/api/tts");
+    console.log("res.data", res.data);
 
-    es.onmessage = async (event) => {
-      const edata = event.data as EventSourceCode;
-      setStatus(edata);
-      es.close();
-      if (edata === "finished") {
+    const sse = new EventSource("/api/tts");
+
+    sse.onmessage = async (event) => {
+      const sseData = event.data as ttsSynthesisStatusType;
+      state.setStatus(sseData);
+      sse.close();
+      if (sseData === "finished") {
         const speech = await fetchLatestSpeech();
         if (speech) {
           useAudioPlayerStore.setState({ src: speech.speech_url });
@@ -82,12 +64,12 @@ export const speechSynthesis = async (
       }
     };
 
-    es.onerror = (error) => {
-      setStatus("error");
+    sse.onerror = (error) => {
+      state.setStatusError();
       console.error("EventSource failed:", error);
     };
   } else {
-    setStatus("error");
+    state.setStatusError();
     console.log("Error:", res.data);
   }
 };

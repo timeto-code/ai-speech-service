@@ -6,20 +6,15 @@ import SoundSvg from "../SoundSvg";
 import { Button } from "../ui/button";
 
 const SpeechButton = () => {
-  const status = useTTS_SynthesisButton((state) => state.status);
+  const isPending = useTTS_SynthesisButton((state) => state.isPending);
 
   const handleClick = async () => {
     speechSynthesis(false);
   };
 
   return (
-    <Button
-      className="h-11 w-[58px]"
-      onClick={handleClick}
-      variant="outline"
-      disabled={status === "pending"}
-    >
-      <SoundSvg animate={status === "pending"} />
+    <Button className="h-11 w-[58px]" onClick={handleClick} variant="outline" disabled={isPending}>
+      <SoundSvg animate={isPending} />
     </Button>
   );
 };

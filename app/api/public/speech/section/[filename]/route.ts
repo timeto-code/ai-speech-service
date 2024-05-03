@@ -4,21 +4,14 @@ import fs from "fs";
 import path from "path";
 import { ReadableOptions } from "stream";
 
-function streamFile(
-  path: string,
-  options?: ReadableOptions
-): ReadableStream<Uint8Array> {
+function streamFile(path: string, options?: ReadableOptions): ReadableStream<Uint8Array> {
   const downloadStream = fs.createReadStream(path, options);
 
   return new ReadableStream({
     start(controller) {
-      downloadStream.on("data", (chunk: Buffer) =>
-        controller.enqueue(new Uint8Array(chunk))
-      );
+      downloadStream.on("data", (chunk: Buffer) => controller.enqueue(new Uint8Array(chunk)));
       downloadStream.on("end", () => controller.close());
-      downloadStream.on("error", (error: NodeJS.ErrnoException) =>
-        controller.error(error)
-      );
+      downloadStream.on("error", (error: NodeJS.ErrnoException) => controller.error(error));
     },
     cancel() {
       downloadStream.destroy();
@@ -35,20 +28,11 @@ function getContentTypeByExtension(ext: string) {
   return typeMap[ext] || "application/octet-stream";
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { filename: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { filename: string } }) {
   logger.debug("GET /api/public/speech/section/[filename]");
   const { filename } = params;
   // 读取本地音频文件，返回给前端
-  const filePath = path.resolve(
-    process.cwd(),
-    "public",
-    "speech",
-    "section",
-    filename
-  );
+  const filePath = path.resolve(process.cwd(), "public", "speech", "section", filename);
 
   try {
     const stats = await fs.promises.stat(filePath);
@@ -60,9 +44,7 @@ export async function GET(
     const res = new NextResponse(data, {
       status: 200,
       headers: new Headers({
-        "content-disposition": `attachment; filename=${path.basename(
-          filePath
-        )}`,
+        "content-disposition": `attachment; filename=${path.basename(filePath)}`,
         "content-type": contentType,
         "content-length": stats.size.toString(),
         "accept-ranges": "bytes",

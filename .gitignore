@@ -48,4 +48,4 @@ languageList.json
 prisma/migrations/
 db/*
 
-bug.txt
+BUG.md
