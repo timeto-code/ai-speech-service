@@ -6,6 +6,7 @@ import { useTTS_SynthesisButton } from "@/store/useTTSStore";
 import axios from "axios";
 import { toast } from "sonner";
 import { ttsSynthesisStatusType } from "../util/state";
+import { delay } from "./utils";
 
 export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlSection) => {
   const state = useTTS_SynthesisButton.getState();
@@ -131,5 +132,3 @@ export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlS
     state.setStatusError();
   }
 };
-
-const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
