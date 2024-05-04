@@ -7,33 +7,45 @@ import axios from "axios";
 import { toast } from "sonner";
 import { ttsSynthesisStatusType } from "../util/state";
 
-export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlSection[]) => {
+export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlSection) => {
   const state = useTTS_SynthesisButton.getState();
   state.setStatusPending();
 
-  // 段落转义时，必须传入段落对象
-  if (sectionSynthesis && !section) {
-    return state.setStatusError();
-  }
+  let collectedSection;
 
-  // 整体转义时，需要等待段落整合完成
   if (!sectionSynthesis) {
+    /**
+     * 多个段落整体合成
+     * 1. 延迟 1 秒，等待段落收集完成
+     * 2. 检查收集段落数量
+     */
     useSsmlSynthesisStore.getState().setStarted();
     await delay(1000);
-  }
 
-  // 检查是否有有效段落
-  const sections = useSsmlSectionsStore.getState().sections;
-  if (sections.length === 0) {
-    return state.setStatusError();
+    const sections = useSsmlSectionsStore.getState().sections;
+    if (sections.length === 0) {
+      return state.setStatusError();
+    }
+
+    collectedSection = sections;
+  } else {
+    /**
+     * 单个段落合成
+     * 1. 确认传入段落是否存在
+     */
+    if (!section) {
+      return state.setStatusError();
+    }
+
+    collectedSection = [section];
   }
 
   // 检查所有段落的声音和内容是否都存在
-  const hasInvalidSection = sections.some((s) => !s.voice || !s.htmlContent);
+  const hasInvalidSection = collectedSection.some((s) => !s.voice || !s.htmlContent);
   if (hasInvalidSection) {
     toast("", {
       position: "bottom-left",
-      description: "存在未选择声音或空段落。",
+      description: sectionSynthesis ? "未选择声音或段落为空。" : "存在未选择声音或空段落。",
       style: { width: "auto" },
     });
     return state.setStatusError();
@@ -41,7 +53,7 @@ export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlS
 
   const data = {
     sectionPreview: sectionSynthesis, // 是否是单个段落的 TTS 请求
-    sections: sectionSynthesis ? section : sections, // SSML 段落数组
+    sections: collectedSection, // SSML 段落数组
   } as ttsSynthesisReqDTO;
 
   // 发送 TTS 请求
@@ -74,7 +86,7 @@ export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlS
                   useSsmlSectionsStore.setState((state) => {
                     return {
                       sections: state.sections.map((s) => {
-                        if (s.id === section![0].id) {
+                        if (s.id === section!.id) {
                           return {
                             ...s,
                             url: speech.speech_url,
