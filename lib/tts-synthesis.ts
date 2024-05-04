@@ -62,70 +62,61 @@ export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlS
 
   // 请求成功，创建 EventSource
   if (res.status === 200) {
-    switch (res.data.code) {
-      case 1: {
-        // 提示无有效段落
-        state.setStatusError();
-        break;
-      }
+    if (res.data.code === 2) {
+      const eventSource = new EventSource(`/api/tts/sse`);
 
-      case 2: {
-        const sse = new EventSource(`/api/tts/ees?_=${new Date().getTime()}`);
-
-        sse.onmessage = async (event) => {
-          const sseData = event.data as ttsSynthesisStatusType;
-          state.setStatus(sseData);
-          sse.close();
-
-          switch (sseData) {
-            case "finished":
-              const resSpeech = await fetchLatestSpeech();
-              if (resSpeech.code === 0 && resSpeech.data) {
-                const speech = resSpeech.data;
-                useAudioPlayerStore.setState({ src: speech.speech_url });
-                if (sectionSynthesis) {
-                  useSsmlSectionsStore.setState((state) => {
-                    return {
-                      sections: state.sections.map((s) => {
-                        if (s.id === section!.id) {
-                          return {
-                            ...s,
-                            url: speech.speech_url,
-                          };
-                        }
-                        return s;
-                      }),
-                    };
-                  });
-                }
-              } else {
-                // 提示错误
-                state.setStatusError();
+      eventSource.onmessage = async (event) => {
+        const status = event.data as ttsSynthesisStatusType;
+        switch (status) {
+          case "finished":
+            // 获取最新合成音频
+            const resSpeech = await fetchLatestSpeech();
+            if (resSpeech.code === 0 && resSpeech.data) {
+              const speech = resSpeech.data;
+              useAudioPlayerStore.setState({ src: speech.speech_url });
+              if (sectionSynthesis) {
+                useSsmlSectionsStore.setState((state) => {
+                  return {
+                    sections: state.sections.map((s) => {
+                      if (s.id === section!.id) {
+                        return {
+                          ...s,
+                          url: speech.speech_url,
+                        };
+                      }
+                      return s;
+                    }),
+                  };
+                });
               }
-              break;
+              state.setStatus(status);
+            } else {
+              // 提示错误
+              state.setStatusError();
+            }
+            eventSource.close();
+            break;
 
-            case "terminated":
-              // 提示手动取消成功
-              break;
+          case "terminated": // 通过前端取消
+          case "canceled": // 通过后端取消
+          case "error": // 合成错误
+            eventSource.close();
+            state.setStatus(status);
+            break;
 
-            default:
-              // 其他提示
-              break;
-          }
-        };
+          default:
+            // pending...
+            break;
+        }
+      };
 
-        sse.onerror = (error) => {
-          // 提示错误
-          state.setStatusError();
-        };
-        break;
-      }
-
-      default: {
+      eventSource.onerror = (error) => {
         // 提示错误
         state.setStatusError();
-        break;
-      }
+      };
+    } else {
+      // 提示错误
+      state.setStatusError();
     }
   } else {
     // 提示错误

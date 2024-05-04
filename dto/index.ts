@@ -20,6 +20,8 @@ export const responseCodeMessageMap = {
   8: "查询语言列表失败",
 
   10: "获取语言选项列表值集合失败",
+
+  11: "取消语音合成失败",
 } as Record<string, string>;
 
 // 通用响应 DTO

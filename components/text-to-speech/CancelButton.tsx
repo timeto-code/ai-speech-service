@@ -9,7 +9,7 @@ const CancelButton = () => {
 
   const handleClick = async () => {
     const res = await axios.get("/api/tts?action=CancelSynthesis");
-    if (res.status === 200 && res.data.code === 2) {
+    if (res.status === 200 && res.data.code === 0) {
       console.log("取消语音合成成功");
     } else {
       console.error("取消语音合成失败");
