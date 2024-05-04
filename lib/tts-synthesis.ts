@@ -70,7 +70,7 @@ export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlS
       }
 
       case 2: {
-        const sse = new EventSource(`/api/tts/ees?_=${new Date().getTime()}`);
+        const sse = new EventSource(`/api/sse?_=${new Date().getTime()}`);
 
         sse.onmessage = async (event) => {
           const sseData = event.data as ttsSynthesisStatusType;

@@ -1,7 +1,8 @@
+import { createSpeech } from "@/actions/prisma/speech";
 import { responseCodeMessageMap, ttsSynthesisReqDTO, ttsSynthesisResDTO } from "@/dto";
+import { delay } from "@/lib/utils";
 import { chapterDir, sectionDir } from "@/util/config";
 import logger from "@/util/logger";
-import { createSpeech } from "@/actions/prisma/speech";
 import { generateSSML } from "@/util/ssml";
 import { ttsSynthesisStatus } from "@/util/state";
 import fs from "fs/promises";
@@ -12,7 +13,6 @@ import {
   SpeechSynthesizer,
 } from "microsoft-cognitiveservices-speech-sdk";
 import { NextRequest, NextResponse } from "next/server";
-import { delay } from "@/lib/utils";
 
 // 微软语音合成
 const ttsSynthesis = async (data: ttsSynthesisReqDTO) => {

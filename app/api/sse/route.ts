@@ -1,8 +1,5 @@
 import { ttsSynthesisStatus } from "@/util/state";
 
-/**
- * SSE 轮询检出语音合成状态
- */
 export async function GET() {
   let responseStream = new TransformStream();
   const writer = responseStream.writable.getWriter();
@@ -11,6 +8,8 @@ export async function GET() {
   // 循环检查状态
   const interval = setInterval(() => {
     const message = ttsSynthesisStatus.status;
+    console.log("轮询", message);
+
     const isTerminated = ttsSynthesisStatus.isTerminated();
     if (isTerminated) {
       clearInterval(interval);

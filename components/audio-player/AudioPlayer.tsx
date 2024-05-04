@@ -32,9 +32,7 @@ const AudioPlayer = () => {
   const whilePlaying = useCallback(() => {
     if (audioRef.current) {
       setCurrentSeconds(audioRef.current.currentTime);
-      setCurrentTime(
-        moment.utc(audioRef.current.currentTime * 1000).format("mm:ss")
-      );
+      setCurrentTime(moment.utc(audioRef.current.currentTime * 1000).format("mm:ss"));
     }
     animationRef.current = requestAnimationFrame(whilePlaying);
   }, []);
@@ -141,7 +139,7 @@ const AudioPlayer = () => {
       const api = `/api/public/${src}`;
       setSrcApi(api);
     }
-  }, [src]);
+  }, [src, handleEnded]);
 
   if (!isMounted) {
     return null;
@@ -179,9 +177,7 @@ const AudioPlayer = () => {
           type="range"
           className={`w-full ${styles.slider}`}
           style={{
-            background: `linear-gradient(to right,  #999999 ${
-              (currentSeconds / seconds) * 100
-            }% 
+            background: `linear-gradient(to right,  #999999 ${(currentSeconds / seconds) * 100}% 
           , #fff ${(currentSeconds / seconds) * 100}%)`,
           }}
           min={0.01}
@@ -191,10 +187,7 @@ const AudioPlayer = () => {
         />
       </div>
       <div className="flex items-center justify-end w-[92px]">
-        <span
-          className="text-sm text-nowrap select-none"
-          contentEditable={false}
-        >
+        <span className="text-sm text-nowrap select-none" contentEditable={false}>
           {currentTime} / {duration}
         </span>
       </div>
