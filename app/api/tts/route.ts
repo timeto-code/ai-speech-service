@@ -12,6 +12,7 @@ import {
   SpeechSynthesizer,
 } from "microsoft-cognitiveservices-speech-sdk";
 import { NextRequest, NextResponse } from "next/server";
+import { delay } from "@/lib/utils";
 
 // 微软语音合成
 const ttsSynthesis = async (data: ttsSynthesisReqDTO) => {
@@ -66,6 +67,7 @@ const ttsSynthesis = async (data: ttsSynthesisReqDTO) => {
         try {
           /** 保存 wav、xml 文件路径到数据库 */
           await createSpeech(filename, sections[0].voice!.ShortName, sectionPreview);
+          await delay(2000);
           ttsSynthesisStatus.finished();
         } catch (error) {
           ttsSynthesisStatus.error();

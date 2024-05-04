@@ -58,6 +58,7 @@ jobs:
         run: |
           cd Microsoft-Speech-Service
           npx prisma db push
+          rm -r prisma
 
       - name: check folder
         run: ls -la Microsoft-Speech-Service
@@ -73,8 +74,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v0.0.3
-          release_name: v0.0.3
+          tag_name: v0.0.4
+          release_name: v0.0.4
           draft: false
           prerelease: false
 
