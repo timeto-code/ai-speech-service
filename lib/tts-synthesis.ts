@@ -7,20 +7,12 @@ import axios from "axios";
 import { toast } from "sonner";
 import { ttsSynthesisStatusType } from "../util/state";
 
-export const speechSynthesis = async (
-  sectionSynthesis: Boolean,
-  section?: SsmlSection[]
-) => {
-  const setStatus = useTTS_SynthesisButton.getState().setStatus;
-  setStatus("pending");
+export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlSection) => {
+  const state = useTTS_SynthesisButton.getState();
+  state.setStatusPending();
 
-  // 段落转义时，必须传入段落对象
-  if (sectionSynthesis && !section) {
-    setStatus("error");
-    return;
-  }
+  let collectedSection;
 
-  // 整体转义时，需要等待段落整合完成
   if (!sectionSynthesis) {
     /**
      * 多个段落整体合成
@@ -29,16 +21,40 @@ export const speechSynthesis = async (
      */
     useSsmlSynthesisStore.getState().setStarted();
     await delay(1000);
+
+    const sections = useSsmlSectionsStore.getState().sections;
+    if (sections.length === 0) {
+      return state.setStatusError();
+    }
+
+    collectedSection = sections;
+  } else {
+    /**
+     * 单个段落合成
+     * 1. 确认传入段落是否存在
+     */
+    if (!section) {
+      return state.setStatusError();
+    }
+
+    collectedSection = [section];
   }
-  console.log("test");
+
+  // 检查所有段落的声音和内容是否都存在
+  const hasInvalidSection = collectedSection.some((s) => !s.voice || !s.htmlContent);
+  if (hasInvalidSection) {
+    toast("", {
+      position: "bottom-left",
+      description: sectionSynthesis ? "未选择声音或段落为空。" : "存在未选择声音或空段落。",
+      style: { width: "auto" },
+    });
+    return state.setStatusError();
+  }
 
   const data = {
     sectionPreview: sectionSynthesis, // 是否是单个段落的 TTS 请求
-    sections: sectionSynthesis
-      ? section
-      : useSsmlSectionsStore.getState().sections, // SSML 段落数组
-    voice: useSsmlSectionsStore.getState().sections[0].voice?.ShortName || "", // 语音名称，SQLite 数据库操作使用
-  } as DTO;
+    sections: collectedSection, // SSML 段落数组
+  } as ttsSynthesisReqDTO;
 
   // 发送 TTS 请求
   const res = await axios.post("/api/tts", data);
@@ -55,39 +71,61 @@ export const speechSynthesis = async (
       case 2: {
         const sse = new EventSource(`/api/tts/ees?_=${new Date().getTime()}`);
 
-    es.onmessage = async (event) => {
-      const edata = event.data as EventSourceCode;
-      setStatus(edata);
-      es.close();
-      if (edata === "finished") {
-        const speech = await fetchLatestSpeech();
-        if (speech) {
-          useAudioPlayerStore.setState({ src: speech.speech_url });
-          if (sectionSynthesis) {
-            useSsmlSectionsStore.setState((state) => {
-              return {
-                sections: state.sections.map((s) => {
-                  if (s.id === section![0].id) {
-                    return {
-                      ...s,
-                      url: speech.speech_url,
-                    };
-                  }
-                  return s;
-                }),
-              };
-            });
-          }
-        }
-      } else {
-        console.log("Error:", event.data);
-      }
-    };
+        sse.onmessage = async (event) => {
+          const sseData = event.data as ttsSynthesisStatusType;
+          state.setStatus(sseData);
+          sse.close();
 
-    es.onerror = (error) => {
-      setStatus("error");
-      console.error("EventSource failed:", error);
-    };
+          switch (sseData) {
+            case "finished":
+              const resSpeech = await fetchLatestSpeech();
+              if (resSpeech.code === 0 && resSpeech.data) {
+                const speech = resSpeech.data;
+                useAudioPlayerStore.setState({ src: speech.speech_url });
+                if (sectionSynthesis) {
+                  useSsmlSectionsStore.setState((state) => {
+                    return {
+                      sections: state.sections.map((s) => {
+                        if (s.id === section!.id) {
+                          return {
+                            ...s,
+                            url: speech.speech_url,
+                          };
+                        }
+                        return s;
+                      }),
+                    };
+                  });
+                }
+              } else {
+                // 提示错误
+                state.setStatusError();
+              }
+              break;
+
+            case "terminated":
+              // 提示手动取消成功
+              break;
+
+            default:
+              // 其他提示
+              break;
+          }
+        };
+
+        sse.onerror = (error) => {
+          // 提示错误
+          state.setStatusError();
+        };
+        break;
+      }
+
+      default: {
+        // 提示错误
+        state.setStatusError();
+        break;
+      }
+    }
   } else {
     // 提示错误
     state.setStatusError();
