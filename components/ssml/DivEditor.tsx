@@ -94,7 +94,10 @@ const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
   };
 
   const handleSynthesis = () => {
-    speechSynthesis(true, { ...section, htmlContent: contentArea.current?.innerHTML });
+    if (!contentArea.current?.innerHTML) return;
+    if (!section.voice) return;
+
+    speechSynthesis(true, [{ ...section, htmlContent: contentArea.current.innerHTML }]);
   };
 
   const handlePlay = () => {
