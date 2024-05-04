@@ -1,10 +1,10 @@
 import { createSpeech } from "@/actions/prisma/speech";
 import { responseCodeMessageMap, ttsSynthesisReqDTO, ttsSynthesisResDTO } from "@/dto";
-import { delay } from "@/lib/utils";
 import { chapterDir, sectionDir } from "@/util/config";
 import logger from "@/util/logger";
 import { generateSSML } from "@/util/ssml";
-import { ttsSynthesisStatus } from "@/util/state";
+import { ttsSynthesisStatus, ttsSynthesisStatusType } from "@/util/state";
+import axios from "axios";
 import fs from "fs/promises";
 import {
   AudioConfig,
@@ -13,6 +13,11 @@ import {
   SpeechSynthesizer,
 } from "microsoft-cognitiveservices-speech-sdk";
 import { NextRequest, NextResponse } from "next/server";
+
+// 更新 SSE 状态
+const updateStatus = async (status: ttsSynthesisStatusType) => {
+  return await axios.get(`http://localhost:3007/api/tts/sse/status/${status}`);
+};
 
 // 微软语音合成
 const ttsSynthesis = async (data: ttsSynthesisReqDTO) => {
@@ -57,8 +62,15 @@ const ttsSynthesis = async (data: ttsSynthesisReqDTO) => {
   const audioConfig = AudioConfig.fromAudioFileOutput(wavDir);
   /** 创建语音合成器 */
   const synthesizer = new SpeechSynthesizer(speechConfig, audioConfig);
+
+  // 更新 SSE 状态为 pending
+  try {
+    await updateStatus("pending");
+  } catch (error) {
+    throw error;
+  }
+
   /** 执行语音合成 */
-  ttsSynthesisStatus.start();
   synthesizer.speakSsmlAsync(
     xml,
     async function (result) {
@@ -67,21 +79,32 @@ const ttsSynthesis = async (data: ttsSynthesisReqDTO) => {
         try {
           /** 保存 wav、xml 文件路径到数据库 */
           await createSpeech(filename, sections[0].voice!.ShortName, sectionPreview);
-          await delay(2000);
-          ttsSynthesisStatus.finished();
+          await updateStatus("finished");
         } catch (error) {
-          ttsSynthesisStatus.error();
-          logger.error(`Speech synthesis db error: ${error}`);
+          try {
+            await updateStatus("error");
+            logger.error(`Speech synthesis db error: ${error}`);
+          } catch (error) {
+            throw error;
+          }
         }
       } else {
-        ttsSynthesisStatus.canceled();
-        logger.error(`Speech synthesis canceled, ${result.errorDetails}`);
+        try {
+          await updateStatus("canceled");
+          logger.error(`Speech synthesis canceled, ${result.errorDetails}`);
+        } catch (error) {
+          throw error;
+        }
       }
     },
-    function (error) {
-      synthesizer.close();
-      ttsSynthesisStatus.error();
-      logger.error(`Speech synthesis error: ${error}`);
+    async function (error) {
+      try {
+        synthesizer.close();
+        await updateStatus("error");
+        logger.error(`Speech synthesis error: ${error}`);
+      } catch (error) {
+        throw error;
+      }
     }
   );
 
@@ -118,8 +141,14 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const action = request.nextUrl.searchParams.get("action");
 
+  // 取消语音合成
   if (action === "CancelSynthesis") {
-    ttsSynthesisStatus.terminated();
-    return NextResponse.json({ code: 2 });
+    try {
+      await updateStatus("terminated");
+      return sendResponse({ code: 0 });
+    } catch (error) {
+      logger.error(`${responseCodeMessageMap[11]}: ${error}`);
+      return sendResponse({ code: 11 });
+    }
   }
 }
