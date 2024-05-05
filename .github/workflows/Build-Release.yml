@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     name: Archive and Release
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     if: github.event.pull_request.merged == true
 
