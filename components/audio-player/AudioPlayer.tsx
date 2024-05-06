@@ -91,7 +91,7 @@ const AudioPlayer = () => {
     if (!src) return;
 
     if (audioRef.current) {
-      audioRef.current.currentTime += 5;
+      audioRef.current.currentTime += 3;
     }
   };
 
@@ -100,7 +100,7 @@ const AudioPlayer = () => {
     if (!src) return;
 
     if (audioRef.current) {
-      audioRef.current.currentTime -= 5;
+      audioRef.current.currentTime -= 3;
     }
   };
 
