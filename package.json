@@ -1,14 +1,11 @@
 {
   "name": "microsoft-speech-service",
-  "version": "0.1.0",
+  "version": "0.0.7",
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_ENV=development next dev --port 3007",
     "build": "next build",
-    "start": "start /B node start.js",
-    "start-mac": "cross-env NODE_ENV=production next start --port 3007",
-    "start-win": "cross-env NODE_ENV=production next start --port 3007",
-    "start-linux": "cross-env NODE_ENV=production next start --port 3007",
+    "start": "cross-env NODE_ENV=production next start --port 3007",
     "lint": "next lint"
   },
   "dependencies": {

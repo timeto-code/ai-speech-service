@@ -10,4 +10,3 @@ cmd /c call run.bat
 
 echo Press any key to exit...
 pause > nul
-
