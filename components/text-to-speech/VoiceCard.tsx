@@ -297,19 +297,12 @@ const VoiceCard = ({ voice }: VoiceCardProps) => {
 
   return (
     <div className="flex items-start">
-      <div
-        className="border border-zinc-400 p-1 rounded-sm flex-1"
-        onClick={(e) => {}}
-      >
+      <div className="border border-zinc-400 p-1 rounded-sm flex-1" onClick={(e) => {}}>
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div className="rounded-full h-6 w-6 relative">
               <Image
-                src={
-                  voice.Gender === "Male"
-                    ? "/image/man.png"
-                    : "/image/woman.png"
-                }
+                src={voice.Gender === "Male" ? "/image/man.png" : "/image/woman.png"}
                 alt=""
                 fill
                 sizes="24"
@@ -330,9 +323,7 @@ const VoiceCard = ({ voice }: VoiceCardProps) => {
               <span className="text-sm ml-2">{voice.LocalName}</span>
             </Button>
           </div>
-          {voice.StyleList ||
-          voice.RolePlayList ||
-          voice.SecondaryLocaleList ? (
+          {voice.StyleList || voice.RolePlayList || voice.SecondaryLocaleList ? (
             <button
               className="flex items-center justify-center mr-1"
               onClick={(e) => {
@@ -363,9 +354,7 @@ const VoiceCard = ({ voice }: VoiceCardProps) => {
                       >
                         <div className="flex items-center">
                           {StylesEmoji[style]?.emoji}
-                          <span className="text-xs">
-                            {StylesEmoji[style]?.name || style}
-                          </span>
+                          <span className="text-xs">{StylesEmoji[style]?.name || style}</span>
                         </div>
                       </BadgeButton>
                     ))}
@@ -385,9 +374,7 @@ const VoiceCard = ({ voice }: VoiceCardProps) => {
                       >
                         <div className="flex items-center pl-1">
                           {/* {rolePlayEmoji[role]?.emoji} */}
-                          <span className="text-xs">
-                            {rolePlayEmoji[role]?.name || role}
-                          </span>
+                          <span className="text-xs">{rolePlayEmoji[role]?.name || role}</span>
                         </div>
                       </BadgeButton>
                     ))}
@@ -399,19 +386,17 @@ const VoiceCard = ({ voice }: VoiceCardProps) => {
                   <div className="my-1 border-t bg-zinc-500" />
                   <span className="text-sm text-nowrap">语言种类</span>
                   <div className="h-24 overflow-auto">
-                    {JSON.parse(voice.SecondaryLocaleList).map(
-                      (locale: string) => (
-                        <BadgeButton
-                          handleClick={() => {}}
-                          key={locale}
-                          disabled={currentVoce?.ShortName !== voice.ShortName}
-                        >
-                          <div className="flex items-center pl-1">
-                            <span className="text-xs">{locale}</span>
-                          </div>
-                        </BadgeButton>
-                      )
-                    )}
+                    {JSON.parse(voice.SecondaryLocaleList).map((locale: string) => (
+                      <BadgeButton
+                        handleClick={() => {}}
+                        key={locale}
+                        disabled={currentVoce?.ShortName !== voice.ShortName}
+                      >
+                        <div className="flex items-center pl-1">
+                          <span className="text-xs">{locale}</span>
+                        </div>
+                      </BadgeButton>
+                    ))}
                   </div>
                 </div>
               )}

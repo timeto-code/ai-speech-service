@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  SsmlSection,
-  useSSMLStore,
-  useSsmlSectionsStore,
-} from "@/store/useSSMLStore";
+import { SsmlSection, useSSMLStore, useSsmlSectionsStore } from "@/store/useSSMLStore";
 import { useVoiceStore } from "@/store/useVoiceStore";
 import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -12,6 +8,7 @@ import "../../styles/SsmlArea.css";
 import { Button } from "../ui/button";
 import DivEditor from "./DivEditor";
 import { cn } from "@/lib/utils";
+import XmlEditor from "./XmlEditor";
 
 const SsmlArea = () => {
   const voice = useVoiceStore((state) => state.voice);
@@ -76,26 +73,18 @@ const SsmlArea = () => {
   // 设置滚动条和内容的间距
   useEffect(() => {
     if (!scrollDiv.current) return;
-    setIsScrollBarVisible(
-      scrollDiv.current.scrollHeight > scrollDiv.current.clientHeight
-    );
+    setIsScrollBarVisible(scrollDiv.current.scrollHeight > scrollDiv.current.clientHeight);
   }, [newSectionAction]);
 
   return (
     <div
       ref={scrollDiv}
-      className={cn(
-        "h-full overflow-auto flex flex-col gap-3",
-        isScrollBarVisible ? "pr-1" : ""
-      )}
+      className={cn("h-full overflow-auto flex flex-col gap-3", isScrollBarVisible ? "pr-1" : "")}
     >
       {sections.map((section) => (
-        <DivEditor
-          key={section.id}
-          section={section}
-          handleDeleteSection={handleDeleteSection}
-        />
+        <DivEditor key={section.id} section={section} handleDeleteSection={handleDeleteSection} />
       ))}
+      <XmlEditor section={sections[0]} handleDeleteSection={handleDeleteSection} />
       <div>
         <Button
           variant="outline"

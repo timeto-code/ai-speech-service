@@ -9,6 +9,7 @@ import {
   useSsmlSynthesisStore,
 } from "@/store/useSSMLStore";
 import React, { useEffect } from "react";
+import "../../styles/XmlEditor.css";
 import EditorMenu from "./EditorMenu";
 import { cn } from "@/lib/utils";
 
@@ -17,22 +18,50 @@ interface DivEditorProps {
   handleDeleteSection: (id: number) => void;
 }
 
-const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
+const XmlEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
   const contentArea = React.useRef<HTMLDivElement>(null);
+
+  const [contents, setContents] = React.useState<Map<number, string>>(new Map());
+
+  const handleSpanClick = (id: number) => {
+    console.log("span click", id);
+
+    const span = document.getElementById(`${id}`);
+    const text = span?.textContent;
+    console.log("span text", text);
+
+    const range = document.createRange(); // 创建一个范围对象
+    const selection = window.getSelection(); // 获取当前的选区
+
+    // 移动范围到 div 的最后
+    range.selectNodeContents(span!); // 选择 div 的全部内容
+    range.collapse(false); // false 参数表示范围折叠到末尾
+
+    // 清除当前选区，然后添加新的范围
+    selection!.removeAllRanges();
+    selection!.addRange(range);
+
+    span!.focus();
+  };
 
   const handleBreak = () => {
     // 获取选中的文本
     const selection = window.getSelection();
     const selectedText = selection?.toString();
+    if (selectedText) return;
 
-    const span = document.createElement("span");
-    // span.style.color = "#0078d4";
-    span.textContent = `=${selectedText}ms` || "";
+    const span = document.createElement("div");
+    span.textContent = `>`;
     span.className = "break";
     // span.setAttribute("ssml-code", `<break time="700ms" /><s />`);
-    span.setAttribute("data-before", "[");
-    span.setAttribute("data-after", "]");
-    // span.contentEditable = "true";
+    const id = new Date().getTime();
+    span.setAttribute("id", `${id}`);
+    span.setAttribute("data-before", "<1.5s");
+    span.contentEditable = "true";
+    span.onmousedown = (e) => {
+      e.preventDefault();
+      handleSpanClick(id);
+    };
 
     // 将span标签替换选中的文本
     const range = selection?.getRangeAt(0);
@@ -118,7 +147,7 @@ const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
         }),
       };
     });
-  }, [started, section.id]);
+  }, [started]);
 
   return (
     <div className="border border-zinc-500/20 rounded-sm">
@@ -151,4 +180,4 @@ const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
   );
 };
 
-export default DivEditor;
+export default XmlEditor;
