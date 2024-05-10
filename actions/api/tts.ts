@@ -6,6 +6,7 @@ import {
   fetchLanguageOptionsResDTO,
   fetchLatestSpeechResDTO,
   fetchRegionVoiceListResDTO,
+  fetchRoleOptionsResDTO,
   fetchVoiceByfilterReqDTO,
   responseCodeMessageMap,
 } from "@/dto";
@@ -25,6 +26,7 @@ const sendResponse = (
     | fetchLatestSpeechResDTO
     | fetchLanguageListResDTO
     | fetchLanguageOptionsResDTO
+    | fetchRoleOptionsResDTO
 ) => {
   res.message = responseCodeMessageMap[res.code];
   return { ...res };
@@ -97,9 +99,9 @@ export const fetchRegionVoiceList = async () => {
 };
 
 // 查询声音列表
-export const fetchVoiceByfilter = async (language: string, gender: string) => {
+export const fetchVoiceByfilter = async (language: string, gender: string, role: string) => {
   try {
-    const res = await getVoiceByfilter(language, gender);
+    const res = await getVoiceByfilter(language, gender, role);
     return sendResponse({ code: 0, data: res }) as fetchVoiceByfilterReqDTO;
   } catch (error) {
     logger.error(`${responseCodeMessageMap[6]}: ${error}`);
@@ -185,5 +187,43 @@ export const fetchLanguageOptions = async (languages: string[]) => {
   } catch (error) {
     logger.error(`${responseCodeMessageMap[10]}: ${error}`);
     return sendResponse({ code: 10 }) as fetchLanguageOptionsResDTO;
+  }
+};
+
+// 获取语言角色列表值集合
+export const fetchRoleList = async () => {
+  try {
+    const voices = await prisma.voice.findMany({
+      select: { RolePlayList: true },
+    });
+
+    const roleSet = new Set<string>();
+    voices.forEach((v) => {
+      if (v.RolePlayList) {
+        JSON.parse(v.RolePlayList).forEach((role: string) => {
+          roleSet.add(role);
+        });
+      }
+    });
+
+    const writeFilePath = path.join(rootDir, "public", "role.json");
+    fs.writeFile(writeFilePath, JSON.stringify([...roleSet], null, 2));
+
+    const readFilePath = path.join(rootDir, "public", "RoleCode.json");
+    const roleCodeStr = await fs.readFile(readFilePath, "utf-8");
+    const roleCodeObj = JSON.parse(roleCodeStr);
+
+    const options = Array.from(roleSet).map((item) => ({
+      label: roleCodeObj[item] || item,
+      value: item,
+    })) as OptionObject[];
+
+    // 第一位加入 All 选项
+    options.unshift({ label: "全部", value: "All" });
+
+    return sendResponse({ code: 0, data: options }) as fetchRoleOptionsResDTO;
+  } catch (error) {
+    logger.error(`${responseCodeMessageMap[12]}: ${error}`);
+    return sendResponse({ code: 12 }) as fetchRoleOptionsResDTO;
   }
 };

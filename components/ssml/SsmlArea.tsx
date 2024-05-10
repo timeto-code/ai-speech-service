@@ -8,7 +8,6 @@ import "../../styles/SsmlArea.css";
 import { Button } from "../ui/button";
 import DivEditor from "./DivEditor";
 import { cn } from "@/lib/utils";
-import XmlEditor from "./XmlEditor";
 
 const SsmlArea = () => {
   const voice = useVoiceStore((state) => state.voice);
@@ -84,7 +83,6 @@ const SsmlArea = () => {
       {sections.map((section) => (
         <DivEditor key={section.id} section={section} handleDeleteSection={handleDeleteSection} />
       ))}
-      <XmlEditor section={sections[0]} handleDeleteSection={handleDeleteSection} />
       <div>
         <Button
           variant="outline"

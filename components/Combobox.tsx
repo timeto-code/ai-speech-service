@@ -2,16 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { Command } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
-import * as React from "react";
+import { useState } from "react";
 
-interface ComboboxProps {
+interface Props {
   boxLabel: string;
   options: OptionObject[];
   value: string;
@@ -20,21 +16,14 @@ interface ComboboxProps {
   className?: string;
 }
 
-const Combobox = ({
-  boxLabel,
-  options,
-  value,
-  setValue,
-  isLoading,
-  className,
-}: ComboboxProps) => {
-  const [open, setOpen] = React.useState(false);
+const Combobox = ({ boxLabel, options, value, setValue, isLoading, className }: Props) => {
+  const [open, setOpen] = useState(false);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          className="w-full  flex items-center justify-between"
+          className="w-full h-8 flex items-center justify-between"
           variant="outline"
           disabled={isLoading}
         >
@@ -43,7 +32,9 @@ const Combobox = ({
               "text-nowrap truncate",
               boxLabel === "语言"
                 ? "before:content-['语言_:_']"
-                : "before:content-['性别_:_']"
+                : boxLabel === "性别"
+                ? "before:content-['性别_:_']"
+                : "before:content-['角色_:_']"
             )}
           >
             {value
@@ -62,16 +53,13 @@ const Combobox = ({
               key={i}
               value={option.value}
               onClick={() => {
-                setValue(option.value === value ? "" : option.value);
+                setValue(option.value === value ? value : option.value);
                 setOpen(false);
               }}
               title={option.label}
             >
               <Check
-                className={cn(
-                  "mr-2 h-4 w-4",
-                  value === option.value ? "opacity-100" : "opacity-0"
-                )}
+                className={cn("mr-2 h-4 w-4", value === option.value ? "opacity-100" : "opacity-0")}
               />
               <span className="text-sm truncate">{option.label}</span>
             </Button>

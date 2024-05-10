@@ -44,7 +44,7 @@ const LanguageCombobox = ({ isLoading }: Props) => {
       value={value}
       setValue={setValue}
       isLoading={isLoading}
-      className="h-[calc(100vh-116px)] w-[288px] py-1 px-0"
+      className="h-[calc(100vh-110px)] w-56 py-1 px-0"
     />
   );
 };

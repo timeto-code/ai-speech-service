@@ -4,15 +4,13 @@ import CancelButton from "@/components/text-to-speech/CancelButton";
 import OpenSpeechDir from "@/components/text-to-speech/OpenSpeechDir";
 import SpeechButton from "@/components/text-to-speech/SpeechButton";
 import ToolSidebar from "@/components/text-to-speech/ToolSidebar";
-import VoiceConfig from "@/components/text-to-speech/VoiceConfig";
-import VoiceDetial from "@/components/text-to-speech/VoiceDetial";
 import Voices from "@/components/text-to-speech/Voices";
 import { Toaster } from "@/components/ui/sonner";
 
 const page = () => {
   return (
     <div className="h-full w-full overflow-auto">
-      <div className="h-full flex w-[1280px] p-3 mx-auto">
+      <div className="h-full flex max-w-[1280px] min-w-[1024px] p-3 mx-auto">
         <div className="w-56 select-none" contentEditable={false}>
           <Voices />
         </div>
@@ -45,7 +43,6 @@ const page = () => {
           </div>
         </div>
         <div className="w-72 select-none" contentEditable={false}>
-          {/* <VoiceDetial /> */}
           <ToolSidebar />
         </div>
       </div>

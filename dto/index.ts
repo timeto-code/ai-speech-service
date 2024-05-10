@@ -22,6 +22,8 @@ export const responseCodeMessageMap = {
   10: "获取语言选项列表值集合失败",
 
   11: "取消语音合成失败",
+
+  12: "获取语言角色列表值集合失败",
 } as Record<string, string>;
 
 // 通用响应 DTO
@@ -79,6 +81,13 @@ export type fetchLanguageListResDTO = {
 
 // 获取语言选项列表值集合 - 响应 DTO
 export type fetchLanguageOptionsResDTO = {
+  code: number;
+  message?: string;
+  data?: OptionObject[];
+};
+
+// 获取语言角色列表值集合 - 响应 DTO
+export type fetchRoleOptionsResDTO = {
   code: number;
   message?: string;
   data?: OptionObject[];

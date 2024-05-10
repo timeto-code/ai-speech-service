@@ -180,7 +180,7 @@ export const StylesEmoji: Record<string, { emoji: string; name: string }> = {
 // SeniorMale - 老年男性
 // YoungAdultFemale - 青年女性
 // YoungAdultMale - 青年男性
-// Narrator - 叙述者
+// Narrator - 旁白
 
 export const rolePlayEmoji: Record<string, { emoji: string; name: string }> = {
   Boy: {
@@ -217,7 +217,7 @@ export const rolePlayEmoji: Record<string, { emoji: string; name: string }> = {
   },
   Narrator: {
     emoji: "🎙️",
-    name: "叙述者",
+    name: "旁白",
   },
 };
 

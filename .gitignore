@@ -43,6 +43,7 @@ public/**/*.xml
 logs/*
 voiceList.json
 languageList.json
+role.json
 
 # db
 prisma/migrations/

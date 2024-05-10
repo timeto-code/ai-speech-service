@@ -8,6 +8,17 @@ import { useEffect, useRef, useState } from "react";
 import { StylesEmoji, rolePlayEmoji } from "./Card";
 
 const Break = [250, 500, 750, 1000, 1250];
+const roleMap = {
+  Narrator: "旁白",
+  YoungAdultMale: "男青年",
+  YoungAdultFemale: "女青年",
+  OlderAdultMale: "男中年",
+  SeniorFemale: "女老年",
+  SeniorMale: "男老年",
+  OlderAdultFemale: "女中年",
+  Boy: "男孩",
+  Girl: "女孩",
+} as Record<string, string>;
 
 const ToolSidebar = () => {
   const voice = useVoiceStore((state) => state.voice);
@@ -18,6 +29,10 @@ const ToolSidebar = () => {
   const [showBreak, setShowBreak] = useState(true);
 
   // 防止光标在input中时，触发 break 功能
+
+  // 当前风格 & 角色
+  const [currentStyle, setCurrentStyle] = useState<string>("");
+  const [currentRole, setCurrentRole] = useState<string>("");
 
   const [selection, setSelection] = useState<Range | null>(null);
   // 无读音声调按钮不可用
@@ -43,6 +58,7 @@ const ToolSidebar = () => {
     setSelection(winSelection!.getRangeAt(0));
   };
 
+  // 清除说话风格
   const clearStyle = (index: string) => {
     const spans = document.querySelectorAll(`span[name="${index}"]`);
     spans.forEach((span) => {
@@ -56,10 +72,19 @@ const ToolSidebar = () => {
     });
   };
 
+  // 添加说话风格
   const handleStyle = (style: string) => {
+    setCurrentStyle((prev) => (prev === style ? "" : style));
+
     // 获取选中的文本
     const selection = window.getSelection();
     if (!selection) return;
+    // 获取父元素
+    const parentElement = selection?.anchorNode?.parentNode;
+    if (parentElement?.nodeName === "SPAN") {
+      return alert("声音角色不能嵌套");
+    }
+
     const selectedRange = selection?.getRangeAt(0);
     if (!selectedRange) return;
     const textFragment = selectedRange.cloneContents();
@@ -68,7 +93,9 @@ const ToolSidebar = () => {
     const spanStart = document.createElement("span");
     spanStart.setAttribute("name", `${name}`);
     spanStart.className = "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4";
-    spanStart.textContent = `<#${StylesEmoji[style]?.name || style}`;
+    spanStart.textContent = `<#${currentRole ? `${roleMap[currentRole]} - ` : ``}${
+      StylesEmoji[style]?.name || style
+    }`;
     spanStart.contentEditable = "false";
 
     // 将DocumentFragment转换为HTML字符串并设置为spanContent的内容
@@ -86,9 +113,6 @@ const ToolSidebar = () => {
     spanEnd.textContent = `#>`;
     spanEnd.className = "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4";
     spanEnd.contentEditable = "false";
-
-    // 获取父元素
-    const parentElement = selection?.anchorNode?.parentNode;
 
     const obs1 = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
@@ -130,8 +154,99 @@ const ToolSidebar = () => {
 
     // 清除选中文本
     selection?.removeAllRanges();
+
+    setCurrentStyle("");
   };
 
+  // 添加角色
+  const handleRole = (role: string) => {
+    // 获取选中的文本
+    const selection = window.getSelection();
+    const selectionStr = selection?.toString();
+
+    if (!selectionStr) {
+      return setCurrentRole((prev) => (prev === role ? "" : role));
+    }
+
+    if (!selection) return;
+
+    const parentElement = selection?.anchorNode?.parentNode;
+    if (parentElement?.nodeName === "SPAN") {
+      return alert("声音角色不能嵌套");
+    }
+
+    const selectedRange = selection?.getRangeAt(0);
+    if (!selectedRange) return;
+    const textFragment = selectedRange.cloneContents();
+
+    const name = new Date().getTime();
+    const spanStart = document.createElement("span");
+    spanStart.setAttribute("name", `${name}`);
+    spanStart.className = "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4";
+    spanStart.textContent = `<#${roleMap[role]}${
+      currentStyle ? `- ${StylesEmoji[currentStyle]?.name || currentStyle}` : ""
+    }`;
+    spanStart.contentEditable = "false";
+
+    // 将DocumentFragment转换为HTML字符串并设置为spanContent的内容
+    const tempDiv = document.createElement("div");
+    tempDiv.appendChild(textFragment);
+
+    const spanContent = document.createElement("span");
+    spanContent.setAttribute("name", `${name}`);
+    spanContent.setAttribute("type", `${name}`);
+    spanContent.innerHTML = `${tempDiv.innerHTML}` || "";
+    spanContent.className = "underline underline-offset-4 decoration-[#0078d4]";
+
+    const spanEnd = document.createElement("span");
+    spanEnd.setAttribute("name", `${name}`);
+    spanEnd.textContent = `#>`;
+    spanEnd.className = "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4";
+    spanEnd.contentEditable = "false";
+
+    const obs1 = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        console.log("mutation??xx??", JSON.stringify(mutation, null, 2));
+
+        // 获取span元素，并根据name属性筛选
+        const span = mutation.target as HTMLElement;
+        console.log("span", span);
+        const removed = mutation.removedNodes;
+        console.log("removed", removed);
+
+        mutation.removedNodes.forEach((node) => {
+          console.log("Element removed:", node);
+
+          if (node.nodeType === 1) {
+            const element = node as HTMLElement;
+            if (!element) return;
+            const nodeName = element.getAttribute("name");
+            console.log("node name attribute", nodeName);
+            clearStyle(nodeName!);
+          }
+        });
+      });
+    });
+
+    // 观察父元素的子节点变化
+    if (parentElement) {
+      obs1.observe(parentElement, {
+        childList: true,
+        subtree: true,
+      });
+    }
+
+    // 将span标签替换选中的文本
+    selectedRange?.deleteContents();
+    selectedRange?.insertNode(spanEnd);
+    selectedRange?.insertNode(spanContent);
+
+    selectedRange?.insertNode(spanStart);
+    // 清除选中文本
+    selection?.removeAllRanges();
+  };
+
+  // 添加声调
   const handleTone = () => {
     const id = new Date().getTime();
     const span = document.createElement("span");
@@ -156,6 +271,7 @@ const ToolSidebar = () => {
     setPinYin("");
   };
 
+  // 添加停顿
   const handleBreak = (time: number) => {
     let sele = selection;
     if (!sele) {
@@ -207,7 +323,10 @@ const ToolSidebar = () => {
         </div>
         <div className="flex flex-col flex-1 w-full gap-1">
           <div className="flex justify-between items-center">
-            <div className="w-full flex items-start">{voice.LocalName}</div>
+            <div className="w-full flex items-start">
+              {voice.LocalName}
+              {roleMap[currentRole] && ` - ${roleMap[currentRole]}`}
+            </div>
           </div>
           <div className="text-sm text-gray-400 flex h-5 justify-between">
             {voice.StyleList && JSON.parse(voice.StyleList).length > 0 && (
@@ -228,9 +347,40 @@ const ToolSidebar = () => {
       </div>
 
       <div className="mb-1 border-t bg-zinc-500" />
-      {voice.StyleList && (
+      {voice.RolePlayList && (
         <>
           <div className="p-1">
+            <button
+              className="w-full h-6  text-sm text-start bg-zinc-400/50 px-2 rounded-[2px]"
+              onClick={() => setShowRole(!showRole)}
+            >
+              角色
+            </button>
+            {showRole && (
+              <div className="text-left text-wrap my-1">
+                {JSON.parse(voice.RolePlayList).map((role: string) => (
+                  <button
+                    className={cn(
+                      "border mt-1 mr-1 rounded-sm hover:bg-slate-400/50 transition-colors duration-200 p-0",
+                      role === currentRole ? "bg-slate-400/50" : ""
+                    )}
+                    key={role}
+                    onClick={() => handleRole(role)}
+                  >
+                    {/* {rolePlayEmoji[role]?.emoji} */}
+                    <div className="text-xs p-1 text-center align-middle">
+                      {rolePlayEmoji[role]?.name || role}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+      {voice.StyleList && (
+        <>
+          <div className="px-1 pb-1">
             <button
               className="w-full h-6 text-sm text-start bg-zinc-400/50 px-2 rounded-[2px]"
               onClick={() => setShowStyle(!showStyle)}
@@ -241,12 +391,15 @@ const ToolSidebar = () => {
               <div className="text-left text-wrap my-1">
                 {JSON.parse(voice.StyleList).map((style: string) => (
                   <button
-                    className="whitespace-normal inline-block border mt-1 mr-1 pr-1 rounded-sm hover:bg-slate-400/50 transition-colors duration-200"
+                    className="border mt-1 mr-1 pr-1 rounded-sm hover:bg-slate-400/50 transition-colors duration-200"
                     key={style}
                     onClick={() => handleStyle(style)}
                   >
                     {StylesEmoji[style]?.emoji}
-                    <span className="text-xs">{StylesEmoji[style]?.name || style}</span>
+
+                    <div className="whitespace-normal inline-block h-full pb-[2px] text-xs text-center align-middle">
+                      {StylesEmoji[style]?.name || style}
+                    </div>
                   </button>
                 ))}
               </div>
@@ -254,31 +407,7 @@ const ToolSidebar = () => {
           </div>
         </>
       )}
-      {voice.RolePlayList && (
-        <>
-          <div className="px-1 pb-1">
-            <button
-              className="w-full h-6  text-sm text-start bg-zinc-400/50 px-2 rounded-[2px]"
-              onClick={() => setShowRole(!showRole)}
-            >
-              角色
-            </button>
-            {showRole && (
-              <div className="text-left text-wrap my-1">
-                {JSON.parse(voice.RolePlayList).map((role: string) => (
-                  <div
-                    className="whitespace-normal inline-block border mt-1 mr-1 px-1 rounded-sm"
-                    key={role}
-                  >
-                    {/* {rolePlayEmoji[role]?.emoji} */}
-                    <span className="text-xs">{rolePlayEmoji[role]?.name || role}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </>
-      )}
+
       {voice.SecondaryLocaleList && (
         <div className="px-1 pb-1">
           {/* <span className="text-sm text-nowrap">语言种类</span> */}

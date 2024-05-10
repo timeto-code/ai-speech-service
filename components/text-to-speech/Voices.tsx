@@ -9,6 +9,7 @@ import LanguageCombobox from "./LanguageCombobox";
 import Spinner from "./Spinner";
 import VoiceList from "./VoiceList";
 import CardList from "./CardList";
+import RoleCombobox from "./RoleCombobox";
 
 const Voices = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -28,10 +29,10 @@ const Voices = () => {
 
   return (
     <div className="w-full h-full flex flex-col gap-2">
-      <div className="relative h-10">
+      <div className="relative h-8">
         <Button
           variant="outline"
-          className="w-full relative"
+          className="w-full h-full relative"
           disabled={isLoading}
           onClick={handleClick}
         >
@@ -41,17 +42,14 @@ const Voices = () => {
           <Spinner className="absolute top-3 left-[28%] h-4 w-4 animate-spin text-[#339900] mr-2" />
         )}
       </div>
-      <div className="h-10">
+      <div className="h-8">
         <LanguageCombobox isLoading={isLoading} />
       </div>
-      <div className="h-10">
+      <div className="h-8">
         <GenderCombobox isLoading={isLoading} />
       </div>
-      <div className="h-10">
-        <GenderCombobox isLoading={isLoading} />
-      </div>
-      <div className="h-10">
-        <GenderCombobox isLoading={isLoading} />
+      <div className="h-8">
+        <RoleCombobox isLoading={isLoading} />
       </div>
       <CardList />
     </div>
