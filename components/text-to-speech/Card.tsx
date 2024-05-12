@@ -242,10 +242,9 @@ const Card = ({ voice, isDetailSidebar }: Props) => {
   };
 
   return (
-    <Button
-      variant="outline"
+    <div
       className={cn(
-        "border border-zinc-400/50 p-1 rounded-sm h-auto w-full",
+        "border border-zinc-400/50 p-1 rounded-sm h-auto w-full cursor-pointer",
         isDetailSidebar ? "hover:bg-white cursor-default" : "hover:bg-zinc-300/50"
       )}
       onClick={handleClick}
@@ -259,6 +258,7 @@ const Card = ({ voice, isDetailSidebar }: Props) => {
               fill
               sizes="48"
               className="object-contain"
+              priority={true}
             />
           </div>
           <div className="flex flex-col flex-1 w-full gap-1">
@@ -353,7 +353,7 @@ const Card = ({ voice, isDetailSidebar }: Props) => {
           </div>
         )}
       </div>
-    </Button>
+    </div>
   );
 };
 

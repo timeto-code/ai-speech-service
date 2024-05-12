@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { StylesEmoji, rolePlayEmoji } from "./Card";
 import { useSSMLNodeStore, useSSMLStore } from "@/store/useSSMLStore";
+import { IoIosCheckboxOutline } from "react-icons/io";
 
 const Break = [250, 500, 750, 1000, 1250];
 const roleMap = {
@@ -23,6 +24,8 @@ const roleMap = {
 } as Record<string, string>;
 
 const ToolSidebar = () => {
+  const [key, setKey] = useState(0);
+
   const voice = useVoiceStore((state) => state.voice);
   const [showStyle, setShowStyle] = useState(true);
   const [showRole, setShowRole] = useState(true);
@@ -397,22 +400,14 @@ const ToolSidebar = () => {
     setCurrentStyle("");
     setCurrentRole("");
 
-    // document.addEventListener("mousedown", (e) => {
-    //   console.log("111111111111111");
-
-    //   useSSMLStore.setState({ divEeditor: null });
-    // });
-
-    // return () => {
-    //   document.removeEventListener("mousedown", () => {});
-    // };
+    setKey((prev) => prev + 1);
   }, [voice]);
 
   if (!voice) return <div className="w-full h-full border rounded-sm overflow-auto"></div>;
   return (
-    <div className="w-full h-full border rounded-sm overflow-auto">
-      <div className="w-full flex gap-2 p-2">
-        <div className="h-12 w-12 relative">
+    <div className="w-full h-full border rounded-sm overflow-auto" key={key}>
+      <div className="w-full flex items-center gap-2 px-2 pt-2 ">
+        <div className="h-10 w-10 relative">
           <Image
             src={voice.Gender === "Male" ? "/image/man.png" : "/image/woman.png"}
             alt=""
@@ -421,43 +416,29 @@ const ToolSidebar = () => {
             className="object-contain"
           />
         </div>
-        <div className="flex flex-col flex-1 w-full gap-1">
-          <div className="flex justify-between items-center">
-            <div className="w-full flex items-start">
-              {voice.LocalName}
-              {roleMap[currentRole] && ` - ${roleMap[currentRole]}`}
-            </div>
-          </div>
-          <div className="text-sm text-gray-400 flex h-5 justify-between">
-            {voice.StyleList && JSON.parse(voice.StyleList).length > 0 && (
-              <div className=" flex items-center justify-center  ">
-                {JSON.parse(voice.StyleList).length} 种语气
-              </div>
-            )}
-            {voice.RolePlayList && JSON.parse(voice.RolePlayList).length > 0 && (
-              <div className=" flex items-center justify-center mr-1">
-                {JSON.parse(voice.RolePlayList).length} 个角色
-              </div>
-            )}
-            {voice.SecondaryLocaleList && JSON.parse(voice.SecondaryLocaleList).length > 0 && (
-              <div>{JSON.parse(voice.SecondaryLocaleList).length} 种语言</div>
-            )}
-          </div>
-        </div>
+        <span>
+          {voice.LocalName}
+          {roleMap[currentRole] && ` - ${roleMap[currentRole]}`}
+        </span>
       </div>
 
-      <div className="mb-1 border-t bg-zinc-500" />
+      {/* <div className="mb-1 border-t bg-zinc-500" /> */}
       {voice.RolePlayList && (
         <>
-          <div className="p-1">
+          <div className="px-1 pb-1">
             <button
-              className="w-full h-6  text-sm text-start bg-zinc-400/50 px-2 rounded-[2px]"
+              className="w-full h-6 text-sm flex items-center gap-2 px-1 rounded-[2px] hover:bg-zinc-300/50 transition-colors duration-200 ease-in-out"
               onClick={() => setShowRole(!showRole)}
             >
-              角色
+              <div className="border-b border-zinc-600/80 w-full" />
+              <div className="flex-1 flex items-center h-full gap-1">
+                <span className="text-nowrap">角色</span>
+                <span className="text-xs">{JSON.parse(voice.RolePlayList).length}</span>
+              </div>
+              <div className="border-b border-zinc-600/80 w-full" />
             </button>
             {showRole && (
-              <div className="text-left text-wrap my-1">
+              <div className="text-left text-wrap m-1">
                 <button
                   className={cn(
                     "border mt-1 mr-1 rounded-sm hover:bg-slate-400/50 transition-colors duration-200 p-0",
@@ -492,13 +473,18 @@ const ToolSidebar = () => {
         <>
           <div className="px-1 pb-1">
             <button
-              className="w-full h-6 text-sm text-start bg-zinc-400/50 px-2 rounded-[2px]"
+              className="w-full h-6 text-sm flex items-center gap-2 px-1 rounded-[2px] hover:bg-zinc-300/50 transition-colors duration-200 ease-in-out"
               onClick={() => setShowStyle(!showStyle)}
             >
-              语气
+              <div className="border-b border-zinc-600/80 w-full" />
+              <div className="flex flex-1 items-center justify-between gap-1">
+                <span className="text-nowrap">语气</span>
+                <span className="text-xs">{JSON.parse(voice.StyleList).length}</span>
+              </div>
+              <div className="border-b border-zinc-600/80 w-full" />
             </button>
             {showStyle && (
-              <div className="text-left text-wrap my-1">
+              <div className="text-left text-wrap m-1">
                 {JSON.parse(voice.StyleList).map((style: string) => (
                   <button
                     className="border mt-1 mr-1 pr-1 rounded-sm hover:bg-slate-400/50 transition-colors duration-200"
@@ -522,13 +508,15 @@ const ToolSidebar = () => {
         <div className="px-1 pb-1">
           {/* <span className="text-sm text-nowrap">语言种类</span> */}
           <button
-            className="w-full h-6 text-sm text-start bg-zinc-400/50 px-2 rounded-[2px]"
+            className="w-full h-6 text-sm flex items-center gap-2 px-1 rounded-[2px] hover:bg-zinc-300/50 transition-colors duration-200 ease-in-out"
             onClick={() => setShowLocale(!showLocale)}
           >
-            语言种类
+            <div className="border-b border-zinc-600/80 w-full" />
+            <span className="text-nowrap">语言种类</span>
+            <div className="border-b border-zinc-600/80 w-full" />
           </button>
           {showLocale && (
-            <div className="text-left text-wrap my-1">
+            <div className="text-left text-wrap m-1">
               {JSON.parse(voice.SecondaryLocaleList).map((locale: string) => (
                 <div
                   className="whitespace-normal inline-block border mt-1 mr-1 px-1 rounded-sm"
@@ -545,17 +533,19 @@ const ToolSidebar = () => {
       <div className="px-1 pb-1">
         {/* <span className="text-sm text-nowrap">语言种类</span> */}
         <button
-          className="w-full h-6 text-sm text-start bg-zinc-400/50 px-2 rounded-[2px]"
+          className="w-full h-6 text-sm flex items-center gap-2 px-1 rounded-[2px] hover:bg-zinc-300/50 transition-colors duration-200 ease-in-out"
           onClick={() => setShowTone(!showTone)}
         >
-          声调
+          <div className="border-b border-zinc-600/80 w-full" />
+          <span className="text-nowrap">声调</span>
+          <div className="border-b border-zinc-600/80 w-full" />
         </button>
-        <div className="flex gap-1 items-center mt-1">
-          <span className="w-5">{text || "字"}</span>
+        <div className="flex gap-1 items-center m-1 py-1">
+          <span className="w-5 text-lg font-semibold">{text || "字"}</span>
           <input
             type="text"
             placeholder="请输入拼音..."
-            className="w-full h-6 text-sm border  text-start px-2 rounded-[2px]"
+            className="w-full h-6 text-sm border  text-start px-1 rounded-[2px] outline-none focus:outline-none"
             value={pinYin}
             onChange={(e) => {
               // 只能输入字母
@@ -564,72 +554,73 @@ const ToolSidebar = () => {
             }}
             onFocus={getToneSelection}
           />
-          <button
-            className={cn(
-              "h-6 whitespace-normal inline-block border px-1 rounded-sm  transition-colors duration-200 text-sm",
-              pinYin === "" ? "contrast-0 border-zinc-400/20" : "hover:bg-slate-400/50"
-            )}
-            disabled={pinYin === ""}
-            onClick={handleTone}
-          >
-            <Check className="h-6" />
+          <button disabled={pinYin === ""} onClick={handleTone}>
+            <IoIosCheckboxOutline
+              size={30}
+              className={cn(
+                pinYin === ""
+                  ? "contrast-0 text-zinc-400/20"
+                  : "text-zinc-600 hover:text-slate-600/80"
+              )}
+            />
           </button>
         </div>
-        {/* {Tone.map((tone) => (
-          <button
-            className={cn(
-              "w-12 whitespace-normal inline-block border mt-1 mr-1 px-1 rounded-sm  transition-colors duration-200 text-sm",
-              pinYin === "" ? "contrast-0 border-zinc-400/20" : "hover:bg-slate-400/50"
-            )}
-            key={tone}
-            disabled={pinYin === ""}
-            onClick={() => {
-              handleTone(tone);
-              setPinYin("");
-            }}
-          >
-            {tone}
-          </button>
-        ))} */}
       </div>
       <div className="px-1">
-        {/* <span className="text-sm text-nowrap">语言种类</span> */}
         <button
-          className="w-full h-6 text-sm text-start bg-zinc-400/50 px-2 rounded-[2px]"
+          className="w-full h-6 text-sm flex items-center gap-2 px-1 rounded-[2px] hover:bg-zinc-300/50 transition-colors duration-200 ease-in-out"
           onClick={() => setShowBreak(!showBreak)}
         >
-          停顿
+          <div className="border-b border-zinc-600/80 w-full" />
+          <span className="text-nowrap">停顿</span>
+          <div className="border-b border-zinc-600/80 w-full" />
         </button>
-        {Break.map((time) => (
-          <button
-            className="whitespace-normal inline-block border mt-1 mr-1 px-1 rounded-sm hover:bg-slate-400/50 transition-colors duration-200 text-sm"
-            key={time}
-            onClick={() => {
-              handleBreak(time);
-            }}
-          >
-            {time}ms
-          </button>
-        ))}
-        <div className="flex items-center gap-2 w-full">
-          <input
-            type="number"
-            max={5000}
-            min={250}
-            value={breakTime}
-            className="w-full border mt-1 mr-1 px-1 rounded-sm  text-sm "
-            onChange={(e) => setBreakTime(Number(e.target.value))}
-            onFocus={getBreakSelection}
-          />
-          <span className="  text-sm">ms</span>
-          <button
-            className="border rounded-sm"
-            onClick={() => {
-              handleBreak(breakTime);
-            }}
-          >
-            <Check className="h-4" />
-          </button>
+        <div className="m-1">
+          <div className="flex items-center gap-1 w-full mt-1">
+            <div className="w-full relative h-6">
+              <input
+                type="number"
+                max={5000}
+                min={250}
+                value={breakTime}
+                className="w-full h-full text-sm border  text-start px-1 rounded-[2px] outline-none focus:outline-none"
+                onChange={(e) => {
+                  setBreakTime(
+                    Number(e.target.value) < 250
+                      ? 250
+                      : Number(e.target.value) > 5000
+                      ? 5000
+                      : Number(e.target.value)
+                  );
+                }}
+                onFocus={getBreakSelection}
+              />
+              <p className="text-nowrap text-sm absolute right-[1px] top-[2px] h-[22px] content-center bg-white pointer-events-none">
+                毫秒（ms）
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                handleBreak(breakTime);
+              }}
+            >
+              <IoIosCheckboxOutline
+                size={30}
+                className={cn("text-zinc-600 hover:text-slate-600/80")}
+              />
+            </button>
+          </div>
+          {Break.map((time) => (
+            <button
+              className="whitespace-normal inline-block border mt-1 mr-1 px-1 rounded-sm hover:bg-slate-400/50 transition-colors duration-200 text-sm"
+              key={time}
+              onClick={() => {
+                handleBreak(time);
+              }}
+            >
+              {time}ms
+            </button>
+          ))}
         </div>
       </div>
     </div>
