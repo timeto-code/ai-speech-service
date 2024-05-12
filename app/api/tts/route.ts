@@ -13,6 +13,7 @@ import {
   SpeechSynthesizer,
 } from "microsoft-cognitiveservices-speech-sdk";
 import { NextRequest, NextResponse } from "next/server";
+import { log } from "winston";
 
 // 更新 SSE 状态
 const updateStatus = async (status: ttsSynthesisStatusType) => {
@@ -21,7 +22,7 @@ const updateStatus = async (status: ttsSynthesisStatusType) => {
 
 // 微软语音合成
 const ttsSynthesis = async (data: ttsSynthesisReqDTO) => {
-  const { sectionPreview, sections } = data;
+  const { sectionPreview, sections, xmlNodes } = data;
 
   // 生成文件路径
   const filename = `tts-${new Date().getTime()}`;
@@ -36,7 +37,11 @@ const ttsSynthesis = async (data: ttsSynthesisReqDTO) => {
   const xmlEnd = `</speak>`;
 
   // 生成、合并段落
-  const xmlContent = await generateSSML(sections);
+  const xmlContent = await generateSSML(sections, xmlNodes);
+
+  logger.debug(`SSML: ${xmlContent}`);
+
+  // return { wavDir: "", filename: "" };
 
   // 拼接 SSML 文件
   const ssmlXml = `${xmlSstart}${xmlContent}${xmlEnd}`;
@@ -122,13 +127,13 @@ const sendResponse = (res: ttsSynthesisResDTO) => {
  */
 export async function POST(request: NextRequest) {
   try {
-    let { sectionPreview, sections } = (await request.json()) as ttsSynthesisReqDTO;
+    let { sectionPreview, sections, xmlNodes } = (await request.json()) as ttsSynthesisReqDTO;
 
     // 无有效段落时返回错误
     if (sections.length === 0) return sendResponse({ code: 1 });
 
     // 语音合成开始
-    const { wavDir, filename } = await ttsSynthesis({ sectionPreview, sections });
+    const { wavDir, filename } = await ttsSynthesis({ sectionPreview, sections, xmlNodes });
 
     logger.debug(`${responseCodeMessageMap[2]}: ${wavDir}`);
     return sendResponse({ code: 2, data: filename });

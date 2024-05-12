@@ -1,4 +1,4 @@
-import { SsmlSection } from "@/store/useSSMLStore";
+import { SsmlSection, XMLNode } from "@/store/useSSMLStore";
 import { Speech, Voice } from "@prisma/client";
 
 export const responseCodeMessageMap = {
@@ -36,6 +36,7 @@ export type commonResDTO = {
 export type ttsSynthesisReqDTO = {
   sectionPreview: boolean;
   sections: SsmlSection[];
+  xmlNodes: XMLNode[];
 };
 // TTS 合成 - 响应 DTO
 export type ttsSynthesisResDTO = {

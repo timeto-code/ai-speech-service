@@ -6,9 +6,11 @@ import { Check } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { StylesEmoji, rolePlayEmoji } from "./Card";
+import { useSSMLNodeStore, useSSMLStore } from "@/store/useSSMLStore";
 
 const Break = [250, 500, 750, 1000, 1250];
 const roleMap = {
+  default: "",
   Narrator: "旁白",
   YoungAdultMale: "男青年",
   YoungAdultFemale: "女青年",
@@ -28,13 +30,23 @@ const ToolSidebar = () => {
   const [showTone, setShowTone] = useState(true);
   const [showBreak, setShowBreak] = useState(true);
 
+  // xml 节点管理
+  const {
+    addBreak,
+    deleteBreak,
+    addPhoneme,
+    deletePhoneme,
+    addMsttsExpressAs,
+    deleteMsttsExpressAs,
+  } = useSSMLNodeStore.getState();
+
   // 防止光标在input中时，触发 break 功能
 
   // 当前风格 & 角色
   const [currentStyle, setCurrentStyle] = useState<string>("");
-  const [currentRole, setCurrentRole] = useState<string>("");
+  const [currentRole, setCurrentRole] = useState<string>("default");
 
-  const [selection, setSelection] = useState<Range | null>(null);
+  const [range, setRange] = useState<Range | null>(null);
   // 无读音声调按钮不可用
   const [text, setText] = useState<string>("");
   const [pinYin, setPinYin] = useState<string>("");
@@ -44,18 +56,18 @@ const ToolSidebar = () => {
 
   const getToneSelection = () => {
     const winSelection = window.getSelection();
-    console.log("selection", winSelection);
+    // console.log("selection", winSelection);
     if (winSelection?.rangeCount === 0) return;
-    setSelection(winSelection!.getRangeAt(0));
+    setRange(winSelection!.getRangeAt(0));
     const content = winSelection!.toString()[0];
     setText(content);
   };
 
   const getBreakSelection = () => {
     const winSelection = window.getSelection();
-    console.log("selection", winSelection);
+    // console.log("selection", winSelection);
     if (winSelection?.rangeCount === 0) return;
-    setSelection(winSelection!.getRangeAt(0));
+    setRange(winSelection!.getRangeAt(0));
   };
 
   // 清除说话风格
@@ -79,6 +91,10 @@ const ToolSidebar = () => {
     // 获取选中的文本
     const selection = window.getSelection();
     if (!selection) return;
+
+    const selectionStr = selection?.toString();
+    if (!selectionStr) return;
+
     // 获取父元素
     const parentElement = selection?.anchorNode?.parentNode;
     if (parentElement?.nodeName === "SPAN") {
@@ -92,46 +108,75 @@ const ToolSidebar = () => {
     const name = new Date().getTime();
     const spanStart = document.createElement("span");
     spanStart.setAttribute("name", `${name}`);
-    spanStart.className = "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4";
-    spanStart.textContent = `<#${currentRole ? `${roleMap[currentRole]} - ` : ``}${
-      StylesEmoji[style]?.name || style
-    }`;
+    spanStart.className =
+      "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4 select-none";
+    spanStart.textContent = `<#${
+      currentRole && currentRole !== "default" ? `${roleMap[currentRole]} - ` : ``
+    }${StylesEmoji[style]?.name || style}`;
     spanStart.contentEditable = "false";
 
     // 将DocumentFragment转换为HTML字符串并设置为spanContent的内容
     const tempDiv = document.createElement("div");
-    tempDiv.appendChild(textFragment);
+    // tempDiv.appendChild(textFragment);
+    tempDiv.innerHTML = textFragment.lastChild?.textContent || "";
 
     const spanContent = document.createElement("span");
-    spanContent.setAttribute("name", `${name}`);
-    spanContent.setAttribute("type", `${name}`);
-    spanContent.innerHTML = `${tempDiv.innerHTML}` || "";
-    spanContent.className = "underline underline-offset-4 decoration-[#0078d4]";
+    // spanContent.setAttribute("name", `${name}`);
+    spanContent.setAttribute("type", "mstts:express-as");
+    if (currentRole) spanContent.setAttribute("role", `${currentRole}`);
+    spanContent.setAttribute("style", `${style}`);
+    spanContent.className = "underline underline-offset-4 decoration-[#0078d4] select-none";
+    // 获取内部元素 break、phoneme、等...
+    textFragment.childNodes.forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        // 创建一个文本节点并追加到 spanContent
+        const textNode = document.createTextNode(node!.textContent!);
+        spanContent.appendChild(textNode);
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node.cloneNode(true) as Element;
+
+        const span = document.createElement("span");
+        span.textContent = node.textContent;
+        span.className = "text-xs text-[#0078d4] h-4 font-bold select-none";
+        span.setAttribute("id", element.getAttribute("id")!);
+        span.setAttribute("type", element.getAttribute("type")!);
+
+        spanContent.appendChild(span);
+      }
+    });
+
+    // 同步创建 xml 节点
+    // const xmlNode = `<s/><mstts:express-as${
+    //   currentRole && currentRole !== "default" ? ` role="${currentRole}"` : ""
+    // } style="${style}">${tempDiv.innerHTML || ""}</mstts:express-as><s/>`;
+    // const xmlNodeObj = { id: `${name}`, node: xmlNode };
+    // addMsttsExpressAs(xmlNodeObj);
 
     const spanEnd = document.createElement("span");
     spanEnd.setAttribute("name", `${name}`);
     spanEnd.textContent = `#>`;
-    spanEnd.className = "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4";
+    spanEnd.className =
+      "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4 select-none";
     spanEnd.contentEditable = "false";
 
     const obs1 = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        console.log("mutation??xx??", JSON.stringify(mutation, null, 2));
+        // console.log("mutation??xx??", JSON.stringify(mutation, null, 2));
 
         // 获取span元素，并根据name属性筛选
         const span = mutation.target as HTMLElement;
-        console.log("span", span);
+        // console.log("span", span);
         const removed = mutation.removedNodes;
-        console.log("removed", removed);
+        // console.log("removed", removed);
 
         mutation.removedNodes.forEach((node) => {
-          console.log("Element removed:", node);
+          // console.log("Element removed:", node);
 
           if (node.nodeType === 1) {
             const element = node as HTMLElement;
             if (!element) return;
             const nodeName = element.getAttribute("name");
-            console.log("node name attribute", nodeName);
+            // console.log("node name attribute", nodeName);
             clearStyle(nodeName!);
           }
         });
@@ -164,7 +209,7 @@ const ToolSidebar = () => {
     const selection = window.getSelection();
     const selectionStr = selection?.toString();
 
-    if (!selectionStr) {
+    if (!selectionStr || role === "default") {
       return setCurrentRole((prev) => (prev === role ? "" : role));
     }
 
@@ -182,7 +227,8 @@ const ToolSidebar = () => {
     const name = new Date().getTime();
     const spanStart = document.createElement("span");
     spanStart.setAttribute("name", `${name}`);
-    spanStart.className = "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4";
+    spanStart.className =
+      "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4 select-none";
     spanStart.textContent = `<#${roleMap[role]}${
       currentStyle ? `- ${StylesEmoji[currentStyle]?.name || currentStyle}` : ""
     }`;
@@ -193,35 +239,63 @@ const ToolSidebar = () => {
     tempDiv.appendChild(textFragment);
 
     const spanContent = document.createElement("span");
-    spanContent.setAttribute("name", `${name}`);
-    spanContent.setAttribute("type", `${name}`);
+    // spanContent.setAttribute("name", `${name}`);
+    spanContent.setAttribute("type", "mstts:express-as");
+    spanContent.setAttribute("role", `${role}`);
+    if (currentStyle) spanContent.setAttribute("style", `${currentStyle}`);
     spanContent.innerHTML = `${tempDiv.innerHTML}` || "";
-    spanContent.className = "underline underline-offset-4 decoration-[#0078d4]";
+    spanContent.className = "underline underline-offset-4 decoration-[#0078d4] select-none";
+    // 获取内部元素 break、phoneme、等...
+    textFragment.childNodes.forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        // 创建一个文本节点并追加到 spanContent
+        const textNode = document.createTextNode(node!.textContent!);
+        spanContent.appendChild(textNode);
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node.cloneNode(true) as Element;
+
+        const span = document.createElement("span");
+        span.textContent = node.textContent;
+        span.className = "text-xs text-[#0078d4] h-4 font-bold select-none";
+        span.setAttribute("id", element.getAttribute("id")!);
+        span.setAttribute("type", element.getAttribute("type")!);
+
+        spanContent.appendChild(span);
+      }
+    });
+
+    // 同步创建 xml 节点
+    // const xmlNode = `<s/><mstts:express-as role="${role}"${
+    //   currentStyle ? ` style="${currentStyle}"` : ""
+    // }>${tempDiv.innerHTML || ""}</mstts:express-as><s/>`;
+    // const xmlNodeObj = { id: `${name}`, node: xmlNode };
+    // addMsttsExpressAs(xmlNodeObj);
 
     const spanEnd = document.createElement("span");
-    spanEnd.setAttribute("name", `${name}`);
+    spanEnd.setAttribute("id", `${name}`);
     spanEnd.textContent = `#>`;
-    spanEnd.className = "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4";
+    spanEnd.className =
+      "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4 select-none";
     spanEnd.contentEditable = "false";
 
     const obs1 = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        console.log("mutation??xx??", JSON.stringify(mutation, null, 2));
+        // console.log("mutation??xx??", JSON.stringify(mutation, null, 2));
 
         // 获取span元素，并根据name属性筛选
         const span = mutation.target as HTMLElement;
-        console.log("span", span);
+        // console.log("span", span);
         const removed = mutation.removedNodes;
-        console.log("removed", removed);
+        // console.log("removed", removed);
 
         mutation.removedNodes.forEach((node) => {
-          console.log("Element removed:", node);
+          // console.log("Element removed:", node);
 
           if (node.nodeType === 1) {
             const element = node as HTMLElement;
             if (!element) return;
             const nodeName = element.getAttribute("name");
-            console.log("node name attribute", nodeName);
+            // console.log("node name attribute", nodeName);
             clearStyle(nodeName!);
           }
         });
@@ -248,56 +322,69 @@ const ToolSidebar = () => {
 
   // 添加声调
   const handleTone = () => {
-    const id = new Date().getTime();
+    const name = new Date().getTime();
     const span = document.createElement("span");
     span.textContent = `[ ${pinYin} ]`;
-    span.style.height = "16px";
-    span.style.color = "#0078d4";
-    span.style.fontSize = "12px";
-    span.style.fontWeight = "bold";
-    span.setAttribute("id", `${id}`);
+    span.setAttribute("id", `${name}`);
+    span.setAttribute("type", "phoneme");
+    // span.setAttribute("alphabet", "sapi");
+    // span.setAttribute("ph", `${pinYin}`);
+    span.className = "text-xs text-[#0078d4] h-4 font-bold select-none";
     span.contentEditable = "false";
 
     // 删除选中的文本
     // selection?.deleteContents();
     // 将插入点移动到选区的末尾
-    selection?.collapse(false);
+    range?.collapse(false);
 
     // 插入span标签
-    selection?.insertNode(span);
+    range?.insertNode(span);
 
-    setSelection(null);
+    // 创建 xml 节点 <phoneme alphabet="sapi" ph="de 2">的</phoneme>
+    const xmlNode = `<phoneme alphabet="sapi" ph="${pinYin}">${text}</phoneme>`;
+    const xmlNodeObj = { id: `${name}`, node: xmlNode };
+    addPhoneme(xmlNodeObj);
+
+    setRange(null);
     setText("");
     setPinYin("");
   };
 
   // 添加停顿
   const handleBreak = (time: number) => {
-    let sele = selection;
+    console.log("2222222222222");
+    const divEeditor = useSSMLStore.getState().divEeditor;
+    if (!divEeditor) return;
+
+    let sele = range;
     if (!sele) {
       const winSelection = window.getSelection();
-      console.log("selection", winSelection);
+      // console.log("selection", winSelection);
       if (winSelection?.rangeCount === 0) return;
       sele = winSelection!.getRangeAt(0);
     }
 
     if (!sele.toString) return;
 
-    const id = new Date().getTime();
+    const name = new Date().getTime();
     const span = document.createElement("span");
     span.textContent = `<${time}ms>`;
-    span.style.height = "16px";
-    span.style.color = "#0078d4";
-    span.style.fontSize = "12px";
-    span.style.fontWeight = "bold";
-    span.setAttribute("id", `${id}`);
+    span.setAttribute("id", `${name}`);
+    span.setAttribute("type", "break");
+    // span.setAttribute("time", `${time}ms`);
+    span.className = "text-xs text-[#0078d4] h-4 font-bold select-none";
     span.contentEditable = "false";
+
+    // 创建 xml 节点 <break time="500ms" />
+    const xmlNode = `<break time="${time}ms"/>`;
+    const xmlNodeObj = { id: `${name}`, node: xmlNode };
+    addBreak(xmlNodeObj);
 
     // 将span标签替换选中的文本
     sele?.deleteContents();
     sele?.insertNode(span);
 
-    setSelection(null);
+    setRange(null);
   };
 
   useEffect(() => {
@@ -306,6 +393,19 @@ const ToolSidebar = () => {
     setShowLocale(true);
     setShowTone(true);
     setShowBreak(true);
+
+    setCurrentStyle("");
+    setCurrentRole("");
+
+    // document.addEventListener("mousedown", (e) => {
+    //   console.log("111111111111111");
+
+    //   useSSMLStore.setState({ divEeditor: null });
+    // });
+
+    // return () => {
+    //   document.removeEventListener("mousedown", () => {});
+    // };
   }, [voice]);
 
   if (!voice) return <div className="w-full h-full border rounded-sm overflow-auto"></div>;
@@ -358,6 +458,16 @@ const ToolSidebar = () => {
             </button>
             {showRole && (
               <div className="text-left text-wrap my-1">
+                <button
+                  className={cn(
+                    "border mt-1 mr-1 rounded-sm hover:bg-slate-400/50 transition-colors duration-200 p-0",
+                    currentRole === "default" ? "bg-slate-400/50" : ""
+                  )}
+                  onClick={() => handleRole("default")}
+                >
+                  {/* {rolePlayEmoji[role]?.emoji} */}
+                  <div className="text-xs p-1 text-center align-middle">默认</div>
+                </button>
                 {JSON.parse(voice.RolePlayList).map((role: string) => (
                   <button
                     className={cn(

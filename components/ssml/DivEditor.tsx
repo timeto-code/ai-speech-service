@@ -11,6 +11,7 @@ import {
 import React, { useEffect } from "react";
 import EditorMenu from "./EditorMenu";
 import { cn } from "@/lib/utils";
+import { useVoiceStore } from "@/store/useVoiceStore";
 
 interface DivEditorProps {
   section: SsmlSection;
@@ -128,8 +129,6 @@ const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
         </span>
         <EditorMenu
           handleSynthesis={handleSynthesis}
-          handleShendiao={handleShengDiao}
-          handleBreak={handleBreak}
           handlePlay={handlePlay}
           handleDelete={() => {
             handleDeleteSection(section.id);
@@ -143,7 +142,12 @@ const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
           contentEditable
           onPaste={handlePaste}
           onFocus={() => {
-            useSSMLStore.setState({ currentVoceSection: section });
+            useSSMLStore.setState({ currentVoceSection: section, divEeditor: "div" });
+            if (section.voice) {
+              useVoiceStore.setState({ voice: section.voice });
+            } else {
+              useVoiceStore.setState({ voice: null });
+            }
           }}
         />
       </div>
