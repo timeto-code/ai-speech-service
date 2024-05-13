@@ -1,5 +1,7 @@
+import Editor from "@/components/Editor";
 import AudioPlayer from "@/components/audio-player/AudioPlayer";
 import SsmlArea from "@/components/ssml/SsmlArea";
+import XmlEditor from "@/components/ssml/XmlEditor";
 import CancelButton from "@/components/text-to-speech/CancelButton";
 import OpenSpeechDir from "@/components/text-to-speech/OpenSpeechDir";
 import SpeechButton from "@/components/text-to-speech/SpeechButton";

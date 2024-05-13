@@ -4,12 +4,11 @@ import { fetchRegionVoiceList } from "@/actions/api/tts";
 import { useVoiceStore } from "@/store/useVoiceStore";
 import { useState } from "react";
 import { Button } from "../ui/button";
+import CardList from "./CardList";
 import GenderCombobox from "./GenderCombobox";
 import LanguageCombobox from "./LanguageCombobox";
-import Spinner from "./Spinner";
-import VoiceList from "./VoiceList";
-import CardList from "./CardList";
 import RoleCombobox from "./RoleCombobox";
+import Spinner from "./Spinner";
 
 const Voices = () => {
   const [isLoading, setIsLoading] = useState(false);

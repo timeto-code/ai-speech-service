@@ -1,13 +1,12 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useVoiceStore } from "@/store/useVoiceStore";
-import { Check } from "lucide-react";
-import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-import { StylesEmoji, rolePlayEmoji } from "./Card";
 import { useSSMLNodeStore, useSSMLStore } from "@/store/useSSMLStore";
+import { useVoiceStore } from "@/store/useVoiceStore";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 import { IoIosCheckboxOutline } from "react-icons/io";
+import { StylesEmoji, rolePlayEmoji } from "./Card";
 
 const Break = [250, 500, 750, 1000, 1250];
 const roleMap = {
@@ -98,9 +97,16 @@ const ToolSidebar = () => {
     const selectionStr = selection?.toString();
     if (!selectionStr) return;
 
+    console.log(`selection`, selection);
+
     // 获取父元素
-    const parentElement = selection?.anchorNode?.parentNode;
-    if (parentElement?.nodeName === "SPAN") {
+    const parentElement = selection?.anchorNode?.parentNode as HTMLElement;
+
+    if (
+      parentElement?.nodeName === "SPAN" &&
+      parentElement?.getAttribute("type") &&
+      parentElement?.getAttribute("type") !== ""
+    ) {
       return alert("声音角色不能嵌套");
     }
 
@@ -124,75 +130,53 @@ const ToolSidebar = () => {
     tempDiv.innerHTML = textFragment.lastChild?.textContent || "";
 
     const spanContent = document.createElement("span");
-    // spanContent.setAttribute("name", `${name}`);
+    spanContent.setAttribute("name", `${name}`);
     spanContent.setAttribute("type", "mstts:express-as");
     if (currentRole) spanContent.setAttribute("role", `${currentRole}`);
     spanContent.setAttribute("style", `${style}`);
     spanContent.className = "underline underline-offset-4 decoration-[#0078d4] select-none";
+
+    const removeElements = [] as Element[];
+
     // 获取内部元素 break、phoneme、等...
-    textFragment.childNodes.forEach((node) => {
+    textFragment.childNodes.forEach((node, index) => {
       if (node.nodeType === Node.TEXT_NODE) {
         // 创建一个文本节点并追加到 spanContent
         const textNode = document.createTextNode(node!.textContent!);
         spanContent.appendChild(textNode);
       } else if (node.nodeType === Node.ELEMENT_NODE) {
-        const element = node.cloneNode(true) as Element;
+        const element = node as Element;
 
-        const span = document.createElement("span");
-        span.textContent = node.textContent;
-        span.className = "text-xs text-[#0078d4] h-4 font-bold select-none";
-        span.setAttribute("id", element.getAttribute("id")!);
-        span.setAttribute("type", element.getAttribute("type")!);
+        console.log(`element`, element);
 
-        spanContent.appendChild(span);
+        const type = element.getAttribute("type");
+        if (type === "phoneme" || type === "break") {
+          const span = document.createElement("span");
+          span.textContent = node.textContent;
+          span.className = "text-xs text-[#0078d4] h-4 font-bold select-none";
+          span.setAttribute("id", element.getAttribute("id")!);
+          span.setAttribute("type", element.getAttribute("type")!);
+          spanContent.appendChild(span);
+        } else {
+          // 创建纯文本节点
+          const textNode = document.createTextNode(node!.textContent!);
+          spanContent.appendChild(textNode);
+        }
       }
+
+      removeElements.push(node as Element);
     });
 
-    // 同步创建 xml 节点
-    // const xmlNode = `<s/><mstts:express-as${
-    //   currentRole && currentRole !== "default" ? ` role="${currentRole}"` : ""
-    // } style="${style}">${tempDiv.innerHTML || ""}</mstts:express-as><s/>`;
-    // const xmlNodeObj = { id: `${name}`, node: xmlNode };
-    // addMsttsExpressAs(xmlNodeObj);
+    removeElements.forEach((element) => {
+      element.remove();
+    });
 
     const spanEnd = document.createElement("span");
-    spanEnd.setAttribute("name", `${name}`);
     spanEnd.textContent = `#>`;
+    spanEnd.setAttribute("name", `${name}`);
     spanEnd.className =
       "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4 select-none";
     spanEnd.contentEditable = "false";
-
-    const obs1 = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        // console.log("mutation??xx??", JSON.stringify(mutation, null, 2));
-
-        // 获取span元素，并根据name属性筛选
-        const span = mutation.target as HTMLElement;
-        // console.log("span", span);
-        const removed = mutation.removedNodes;
-        // console.log("removed", removed);
-
-        mutation.removedNodes.forEach((node) => {
-          // console.log("Element removed:", node);
-
-          if (node.nodeType === 1) {
-            const element = node as HTMLElement;
-            if (!element) return;
-            const nodeName = element.getAttribute("name");
-            // console.log("node name attribute", nodeName);
-            clearStyle(nodeName!);
-          }
-        });
-      });
-    });
-
-    // 观察父元素的子节点变化
-    if (parentElement) {
-      obs1.observe(parentElement, {
-        childList: true,
-        subtree: true,
-      });
-    }
 
     // 将span标签替换选中的文本
     selectedRange?.deleteContents();
@@ -218,8 +202,13 @@ const ToolSidebar = () => {
 
     if (!selection) return;
 
-    const parentElement = selection?.anchorNode?.parentNode;
-    if (parentElement?.nodeName === "SPAN") {
+    const parentElement = selection?.anchorNode?.parentNode as HTMLElement;
+
+    if (
+      parentElement?.nodeName === "SPAN" &&
+      parentElement?.getAttribute("type") &&
+      parentElement?.getAttribute("type") !== ""
+    ) {
       return alert("声音角色不能嵌套");
     }
 
@@ -242,7 +231,7 @@ const ToolSidebar = () => {
     tempDiv.appendChild(textFragment);
 
     const spanContent = document.createElement("span");
-    // spanContent.setAttribute("name", `${name}`);
+    spanContent.setAttribute("name", `${name}`);
     spanContent.setAttribute("type", "mstts:express-as");
     spanContent.setAttribute("role", `${role}`);
     if (currentStyle) spanContent.setAttribute("style", `${currentStyle}`);
@@ -255,70 +244,39 @@ const ToolSidebar = () => {
         const textNode = document.createTextNode(node!.textContent!);
         spanContent.appendChild(textNode);
       } else if (node.nodeType === Node.ELEMENT_NODE) {
-        const element = node.cloneNode(true) as Element;
+        const element = node as Element;
 
-        const span = document.createElement("span");
-        span.textContent = node.textContent;
-        span.className = "text-xs text-[#0078d4] h-4 font-bold select-none";
-        span.setAttribute("id", element.getAttribute("id")!);
-        span.setAttribute("type", element.getAttribute("type")!);
+        console.log(`element`, element);
 
-        spanContent.appendChild(span);
+        const type = element.getAttribute("type");
+        if (type === "phoneme" || type === "break") {
+          const span = document.createElement("span");
+          span.textContent = node.textContent;
+          span.className = "text-xs text-[#0078d4] h-4 font-bold select-none";
+          span.setAttribute("id", element.getAttribute("id")!);
+          span.setAttribute("type", element.getAttribute("type")!);
+          spanContent.appendChild(span);
+        } else {
+          // 创建纯文本节点
+          const textNode = document.createTextNode(node!.textContent!);
+          spanContent.appendChild(textNode);
+        }
       }
     });
 
-    // 同步创建 xml 节点
-    // const xmlNode = `<s/><mstts:express-as role="${role}"${
-    //   currentStyle ? ` style="${currentStyle}"` : ""
-    // }>${tempDiv.innerHTML || ""}</mstts:express-as><s/>`;
-    // const xmlNodeObj = { id: `${name}`, node: xmlNode };
-    // addMsttsExpressAs(xmlNodeObj);
-
     const spanEnd = document.createElement("span");
-    spanEnd.setAttribute("id", `${name}`);
+    spanEnd.setAttribute("name", `${name}`);
     spanEnd.textContent = `#>`;
     spanEnd.className =
       "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4 select-none";
     spanEnd.contentEditable = "false";
 
-    const obs1 = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        // console.log("mutation??xx??", JSON.stringify(mutation, null, 2));
-
-        // 获取span元素，并根据name属性筛选
-        const span = mutation.target as HTMLElement;
-        // console.log("span", span);
-        const removed = mutation.removedNodes;
-        // console.log("removed", removed);
-
-        mutation.removedNodes.forEach((node) => {
-          // console.log("Element removed:", node);
-
-          if (node.nodeType === 1) {
-            const element = node as HTMLElement;
-            if (!element) return;
-            const nodeName = element.getAttribute("name");
-            // console.log("node name attribute", nodeName);
-            clearStyle(nodeName!);
-          }
-        });
-      });
-    });
-
-    // 观察父元素的子节点变化
-    if (parentElement) {
-      obs1.observe(parentElement, {
-        childList: true,
-        subtree: true,
-      });
-    }
-
     // 将span标签替换选中的文本
     selectedRange?.deleteContents();
     selectedRange?.insertNode(spanEnd);
     selectedRange?.insertNode(spanContent);
-
     selectedRange?.insertNode(spanStart);
+
     // 清除选中文本
     selection?.removeAllRanges();
   };
@@ -330,8 +288,6 @@ const ToolSidebar = () => {
     span.textContent = `[ ${pinYin} ]`;
     span.setAttribute("id", `${name}`);
     span.setAttribute("type", "phoneme");
-    // span.setAttribute("alphabet", "sapi");
-    // span.setAttribute("ph", `${pinYin}`);
     span.className = "text-xs text-[#0078d4] h-4 font-bold select-none";
     span.contentEditable = "false";
 
@@ -355,7 +311,6 @@ const ToolSidebar = () => {
 
   // 添加停顿
   const handleBreak = (time: number) => {
-    console.log("2222222222222");
     const divEeditor = useSSMLStore.getState().divEeditor;
     if (!divEeditor) return;
 
@@ -374,7 +329,6 @@ const ToolSidebar = () => {
     span.textContent = `<${time}ms>`;
     span.setAttribute("id", `${name}`);
     span.setAttribute("type", "break");
-    // span.setAttribute("time", `${time}ms`);
     span.className = "text-xs text-[#0078d4] h-4 font-bold select-none";
     span.contentEditable = "false";
 

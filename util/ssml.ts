@@ -21,6 +21,10 @@ export const generateSSML = async (sections: SsmlSection[], xmlNodes: XMLNode[])
     const dom = new JSDOM(`<div>${htmlContent}</div>`);
     const document = dom.window.document;
 
+    document.querySelectorAll("br").forEach((br) => {
+      br.remove();
+    });
+
     document.querySelectorAll("span").forEach((span) => {
       if (!span.getAttribute("type")) {
         span.remove();
@@ -65,14 +69,9 @@ export const generateSSML = async (sections: SsmlSection[], xmlNodes: XMLNode[])
         node.replaceWith(newElement);
 
         // 移除不需要的属性
+        newElement.removeAttribute("name");
         newElement.removeAttribute("type");
         newElement.removeAttribute("class");
-
-        // const id = ele.getAttribute("name");
-        // const node = xmlNodes.find((node) => node.id === id)?.node;
-        // if (node) {
-        //   ele.replaceWith(node);
-        // }
       }
     });
 

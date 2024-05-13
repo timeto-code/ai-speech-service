@@ -5,9 +5,8 @@ import { cn } from "@/lib/utils";
 import { useVoiceStore } from "@/store/useVoiceStore";
 import { Voice } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
-import Spinner from "./Spinner";
-import VoiceCard from "./VoiceCard";
 import Card from "./Card";
+import Spinner from "./Spinner";
 
 const CardList = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);

@@ -1,13 +1,11 @@
 "use client";
 
-import { Voice } from "@prisma/client";
-import Image from "next/image";
-import React, { useState } from "react";
-import { Button } from "../ui/button";
-import { useVoiceStore } from "@/store/useVoiceStore";
-import { Ellipsis } from "lucide-react";
-import BadgeButton from "../BadgeButton";
 import { cn } from "@/lib/utils";
+import { useVoiceStore } from "@/store/useVoiceStore";
+import { Voice } from "@prisma/client";
+import { Ellipsis } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 
 export const StylesEmoji: Record<string, { emoji: string; name: string }> = {
   angrychat: {

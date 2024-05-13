@@ -121,6 +121,62 @@ const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
     });
   }, [started, section.id]);
 
+  useEffect(() => {
+    // 定义回调函数处理MutationObserver的变动
+    const callback = (mutationsList: MutationRecord[]) => {
+      for (const mutation of mutationsList) {
+        mutation.removedNodes.forEach((node) => {
+          console.log("Element removed:", node);
+
+          if (node.nodeType === 1) {
+            const element = node as HTMLElement;
+            if (!element) return;
+            const name = element.getAttribute("name");
+            const spans = document.querySelectorAll(`span[name="${name}"]`);
+            spans.forEach((span) => {
+              const type = span.getAttribute("type");
+              if (type) {
+                span.insertAdjacentHTML("beforebegin", span.innerHTML);
+                span.remove();
+              } else {
+                span.remove();
+              }
+            });
+          }
+        });
+
+        // 移除空div、span标签
+        contentArea.current?.childNodes.forEach((node) => {
+          if (node.nodeType === 1) {
+            const element = node as HTMLElement;
+            if (!element) return;
+            if (element.nodeName === "DIV" || element.nodeName === "SPAN") {
+              if (element.innerHTML === "") {
+                element.remove();
+              }
+            }
+          }
+        });
+      }
+    };
+
+    // 创建MutationObserver实例
+    const observer = new MutationObserver(callback);
+
+    // 配置MutationObserver
+    const config = { childList: true, subtree: true };
+
+    // 开始观察目标节点
+    if (contentArea.current) {
+      observer.observe(contentArea.current, config);
+    }
+
+    // 在组件卸载时断开观察器
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   return (
     <div className="border border-zinc-500/20 rounded-sm">
       <div className="bg-zinc-500/10 border-zinc-500/20 flex items-center h-9 px-2">
@@ -138,6 +194,7 @@ const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
       <div className="flex gap-2">
         <div
           ref={contentArea}
+          id="editor"
           className="relative outline-none py-1 px-2 text-lg w-full"
           contentEditable
           onPaste={handlePaste}
