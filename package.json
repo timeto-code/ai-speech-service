@@ -1,6 +1,6 @@
 {
   "name": "microsoft-speech-service",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_ENV=development next dev --port 3007",
@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@lexical/react": "^0.15.0",
     "@prisma/client": "^5.13.0",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-popover": "^1.0.7",
