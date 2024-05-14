@@ -20,8 +20,11 @@
   color: #0078d4; /* 将颜色设置在CSS中可能更为清晰 */
   position: relative; /* 对于某些布局，可能需要定位 */
   display: inline-block; /* 确保可以正确显示伪元素 */
-  font-size: 14px; /* 设置字体大小 */
+  font-size: 12px; /* 设置字体大小 */
   font-weight: bold; /* 设置字体粗细 */
+  cursor: pointer; /* 设置鼠标样式为手型 */
+  height: 100%; /* 设置高度为100% */
+  text-decoration: solid underline; /* 添加双下划线 */
 }
 
 .break::before {
@@ -37,7 +40,7 @@
 .yu-qi {
   /* color: #0078d4; 将颜色设置在CSS中可能更为清晰 */
   position: relative; /* 对于某些布局，可能需要定位 */
-  /* display: inline-block; 确保可以正确显示伪元素 */
+  display: inline-block; /* 确保可以正确显示伪元素 */
   text-decoration: underline; /* 添加下划线 */
   text-decoration-color: #0078d4; /* 设置下划线颜色 */
   text-decoration-thickness: 2px; /* 设置下划线粗细 */
@@ -47,13 +50,13 @@
 .yu-qi::before {
   content: attr(data-before); /* 在文本前添加左括号 */
   color: #0078d4; /* 使颜色与span元素一致 */
-  font-size: 14px; /* 设置字体大小 */
+  font-size: 12px; /* 设置字体大小 */
   font-weight: bold; /* 设置字体粗细 */
 }
 
 .yu-qi::after {
   content: attr(data-after); /* 在文本后添加右括号 */
   color: #0078d4; /* 使颜色与span元素一致 */
-  font-size: 14px; /* 设置字体大小 */
+  font-size: 12px; /* 设置字体大小 */
   font-weight: bold; /* 设置字体粗细 */
 }

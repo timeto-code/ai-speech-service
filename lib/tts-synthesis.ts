@@ -1,7 +1,13 @@
 import { fetchLatestSpeech } from "@/actions/api/tts";
 import { ttsSynthesisReqDTO } from "@/dto";
 import { useAudioPlayerStore } from "@/store/useAudioPlayerStore";
-import { SsmlSection, useSsmlSectionsStore, useSsmlSynthesisStore } from "@/store/useSSMLStore";
+import {
+  SsmlSection,
+  useSSMLNodeStore,
+  useSSMLStore,
+  useSsmlSectionsStore,
+  useSsmlSynthesisStore,
+} from "@/store/useSSMLStore";
 import { useTTS_SynthesisButton } from "@/store/useTTSStore";
 import axios from "axios";
 import { toast } from "sonner";
@@ -47,7 +53,7 @@ export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlS
     toast("", {
       position: "bottom-left",
       description: sectionSynthesis ? "未选择声音或段落为空。" : "存在未选择声音或空段落。",
-      style: { width: "auto" },
+      style: { width: "auto", backgroundColor: "#fcd14f", color: "#000", fontWeight: 600, border: "1px solid #fbbd04" },
     });
     return state.setStatusError();
   }
@@ -55,6 +61,7 @@ export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlS
   const data = {
     sectionPreview: sectionSynthesis, // 是否是单个段落的 TTS 请求
     sections: collectedSection, // SSML 段落数组
+    xmlNodes: useSSMLNodeStore.getState().nodes, // XML 节点数组
   } as ttsSynthesisReqDTO;
 
   // 发送 TTS 请求

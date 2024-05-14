@@ -5,15 +5,23 @@ import { cn } from "@/lib/utils";
 import { useVoiceStore } from "@/store/useVoiceStore";
 import { Voice } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
+import Card from "./Card";
 import Spinner from "./Spinner";
-import VoiceCard from "./VoiceCard";
 
-const VoiceList = () => {
+const CardList = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [voiceList, setVoiceList] = useState<Voice[]>([]);
-  const language = useVoiceStore((state) => state.language);
-  const gender = useVoiceStore((state) => state.gender);
-  const voiceListRefreshed = useVoiceStore((state) => state.voiceListRefreshed);
+  // const language = useVoiceStore((state) => state.language);
+  // const gender = useVoiceStore((state) => state.gender);
+  // const voiceListRefreshed = useVoiceStore((state) => state.voiceListRefreshed);
+  const { language, gender, role, voiceListRefreshed } = useVoiceStore((state) => {
+    return {
+      language: state.language,
+      gender: state.gender,
+      role: state.role,
+      voiceListRefreshed: state.voiceListRefreshed,
+    };
+  });
   // 设置滚动条和内容的间隙
   const scrollDiv = useRef<HTMLDivElement>(null);
   const [isScrollBarVisible, setIsScrollBarVisible] = useState(false);
@@ -21,7 +29,7 @@ const VoiceList = () => {
   useEffect(() => {
     setIsLoading(true);
     const fetchVoiceList = async () => {
-      const res = await fetchVoiceByfilter(language, gender);
+      const res = await fetchVoiceByfilter(language, gender, role);
       if (res.code === 0 && res.data) {
         setVoiceList(res.data);
       } else {
@@ -31,7 +39,7 @@ const VoiceList = () => {
     };
 
     fetchVoiceList();
-  }, [language, gender, voiceListRefreshed]);
+  }, [language, gender, role, voiceListRefreshed]);
 
   useEffect(() => {
     if (!scrollDiv.current) return;
@@ -54,7 +62,7 @@ const VoiceList = () => {
       {voiceList.length > 0 ? (
         <div className="flex flex-col gap-2">
           {voiceList.map((voice, index) => (
-            <VoiceCard key={index} voice={voice} />
+            <Card key={index} voice={voice} />
           ))}
         </div>
       ) : (
@@ -67,4 +75,4 @@ const VoiceList = () => {
   );
 };
 
-export default VoiceList;
+export default CardList;

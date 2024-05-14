@@ -28,7 +28,7 @@ const GenderCombobox = ({ isLoading }: Props) => {
       value={value}
       setValue={setValue}
       isLoading={isLoading}
-      className="h-[114px] w-[288px] py-1 px-0"
+      className="h-[114px] w-56 py-1 px-0"
     />
   );
 };
