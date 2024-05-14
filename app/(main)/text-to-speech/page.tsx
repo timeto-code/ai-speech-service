@@ -1,7 +1,5 @@
-import Editor from "@/components/Editor";
 import AudioPlayer from "@/components/audio-player/AudioPlayer";
 import SsmlArea from "@/components/ssml/SsmlArea";
-import XmlEditor from "@/components/ssml/XmlEditor";
 import CancelButton from "@/components/text-to-speech/CancelButton";
 import OpenSpeechDir from "@/components/text-to-speech/OpenSpeechDir";
 import SpeechButton from "@/components/text-to-speech/SpeechButton";
@@ -17,10 +15,7 @@ const page = () => {
           <Voices />
         </div>
         <div className="h-full mx-3 flex flex-col flex-1 relative">
-          <div
-            className="flex items-center flex-col md:flex-row gap-2 select-none w-full"
-            contentEditable={false}
-          >
+          <div className="flex items-center flex-col md:flex-row gap-2 select-none w-full" contentEditable={false}>
             <div className="flex w-full h-full items-center justify-between md:w-[156px]">
               <div className="flex  h-full gap-2">
                 <SpeechButton />
@@ -39,7 +34,6 @@ const page = () => {
               <OpenSpeechDir />
             </div>
           </div>
-          <div></div>
           <div className="h-full overflow-hidden pt-3">
             <SsmlArea />
           </div>

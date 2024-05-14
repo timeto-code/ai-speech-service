@@ -1,12 +1,16 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { useSSMLNodeStore, useSSMLStore } from "@/store/useSSMLStore";
+import { cn, generateSpan } from "@/lib/utils";
+import { useSSMLNodeStore } from "@/store/useSSMLStore";
 import { useVoiceStore } from "@/store/useVoiceStore";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { IoIosCheckboxOutline } from "react-icons/io";
 import { StylesEmoji, rolePlayEmoji } from "./Card";
+import BadgeButton from "./tool-sidebar/BadgeButton";
+import Separator from "./tool-sidebar/Separator";
+import { toast } from "sonner";
+import { Bold } from "lucide-react";
 
 const Break = [250, 500, 750, 1000, 1250];
 const roleMap = {
@@ -22,6 +26,61 @@ const roleMap = {
   Girl: "女孩",
 } as Record<string, string>;
 
+const RegionMap = {
+  "zh-CN-shaanxi": {
+    emoji: "🏞️",
+    name: "陕西",
+  },
+  "zh-CN-sichuan": {
+    emoji: "🏞️",
+    name: "四川",
+  },
+  "zh-CN-shanxi": {
+    emoji: "🏞️",
+    name: "山西",
+  },
+  "zh-CN-anhui": {
+    emoji: "🏞️",
+    name: "安徽",
+  },
+  "zh-CN-hunan": {
+    emoji: "🏞️",
+    name: "湖南",
+  },
+  "zh-CN-gansu": {
+    emoji: "🏞️",
+    name: "甘肃",
+  },
+  "zh-CN-shandong": {
+    emoji: "🏞️",
+    name: "山东",
+  },
+  "zh-CN-henan": {
+    emoji: "🏞️",
+    name: "河南",
+  },
+  "zh-CN-liaoning": {
+    emoji: "🏞️",
+    name: "辽宁",
+  },
+  "zh-TW": {
+    emoji: "🏞️",
+    name: "台湾",
+  },
+  "nan-CN": {
+    emoji: "🏞️",
+    name: "闽南",
+  },
+  "yue-CN": {
+    emoji: "🏞️",
+    name: "粤语（广东）",
+  },
+  "wuu-CN": {
+    emoji: "🏞️",
+    name: "吴语（上海、苏南等地）",
+  },
+} as Record<string, { emoji: string; name: string }>;
+
 const ToolSidebar = () => {
   const [key, setKey] = useState(0);
 
@@ -33,14 +92,8 @@ const ToolSidebar = () => {
   const [showBreak, setShowBreak] = useState(true);
 
   // xml 节点管理
-  const {
-    addBreak,
-    deleteBreak,
-    addPhoneme,
-    deletePhoneme,
-    addMsttsExpressAs,
-    deleteMsttsExpressAs,
-  } = useSSMLNodeStore.getState();
+  const { addBreak, deleteBreak, addPhoneme, deletePhoneme, addMsttsExpressAs, deleteMsttsExpressAs } =
+    useSSMLNodeStore.getState();
 
   // 防止光标在input中时，触发 break 功能
 
@@ -48,7 +101,7 @@ const ToolSidebar = () => {
   const [currentStyle, setCurrentStyle] = useState<string>("");
   const [currentRole, setCurrentRole] = useState<string>("default");
 
-  const [range, setRange] = useState<Range | null>(null);
+  const [rangeState, setRangeState] = useState<Range | null>(null);
   // 无读音声调按钮不可用
   const [text, setText] = useState<string>("");
   const [pinYin, setPinYin] = useState<string>("");
@@ -56,99 +109,50 @@ const ToolSidebar = () => {
   // 停顿
   const [breakTime, setBreakTime] = useState<number>(250);
 
-  const getToneSelection = () => {
-    const winSelection = window.getSelection();
-    // console.log("selection", winSelection);
-    if (winSelection?.rangeCount === 0) return;
-    setRange(winSelection!.getRangeAt(0));
-    const content = winSelection!.toString()[0];
-    setText(content);
-  };
-
-  const getBreakSelection = () => {
-    const winSelection = window.getSelection();
-    // console.log("selection", winSelection);
-    if (winSelection?.rangeCount === 0) return;
-    setRange(winSelection!.getRangeAt(0));
-  };
-
-  // 清除说话风格
-  const clearStyle = (index: string) => {
-    const spans = document.querySelectorAll(`span[name="${index}"]`);
-    spans.forEach((span) => {
-      const type = span.getAttribute("type");
-      if (type) {
-        span.insertAdjacentHTML("beforebegin", span.innerHTML);
-        span.remove();
-      } else {
-        span.remove();
-      }
-    });
-  };
-
-  // 添加说话风格
-  const handleStyle = (style: string) => {
-    setCurrentStyle((prev) => (prev === style ? "" : style));
-
-    // 获取选中的文本
+  const windowSelection = () => {
     const selection = window.getSelection();
-    if (!selection) return;
+    const content = selection?.toString();
+    const range = selection?.getRangeAt(0);
+    const fragment = range?.cloneContents();
 
-    const selectionStr = selection?.toString();
-    if (!selectionStr) return;
+    return { selection, content, range, fragment };
+  };
 
-    console.log(`selection`, selection);
+  const generateNode = (startSpan: HTMLSpanElement, contentSpan: HTMLSpanElement, endSpan: HTMLSpanElement) => {
+    const { selection, content, range, fragment } = windowSelection();
+    if (!selection || !content || !range || !fragment) return;
 
     // 获取父元素
     const parentElement = selection?.anchorNode?.parentNode as HTMLElement;
-
     if (
       parentElement?.nodeName === "SPAN" &&
       parentElement?.getAttribute("type") &&
       parentElement?.getAttribute("type") !== ""
     ) {
-      return alert("声音角色不能嵌套");
+      // return alert("声音角色不能嵌套");
+      return toast("", {
+        position: "bottom-left",
+        description: "声音角色不能嵌套",
+        style: {
+          width: "auto",
+          backgroundColor: "#fcd14f",
+          border: "1px solid #fbbd04",
+          color: "#000",
+          fontWeight: 600,
+        },
+      });
     }
-
-    const selectedRange = selection?.getRangeAt(0);
-    if (!selectedRange) return;
-    const textFragment = selectedRange.cloneContents();
-
-    const name = new Date().getTime();
-    const spanStart = document.createElement("span");
-    spanStart.setAttribute("name", `${name}`);
-    spanStart.className =
-      "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4 select-none";
-    spanStart.textContent = `<#${
-      currentRole && currentRole !== "default" ? `${roleMap[currentRole]} - ` : ``
-    }${StylesEmoji[style]?.name || style}`;
-    spanStart.contentEditable = "false";
-
-    // 将DocumentFragment转换为HTML字符串并设置为spanContent的内容
-    const tempDiv = document.createElement("div");
-    // tempDiv.appendChild(textFragment);
-    tempDiv.innerHTML = textFragment.lastChild?.textContent || "";
-
-    const spanContent = document.createElement("span");
-    spanContent.setAttribute("name", `${name}`);
-    spanContent.setAttribute("type", "mstts:express-as");
-    if (currentRole) spanContent.setAttribute("role", `${currentRole}`);
-    spanContent.setAttribute("style", `${style}`);
-    spanContent.className = "underline underline-offset-4 decoration-[#0078d4] select-none";
 
     const removeElements = [] as Element[];
 
     // 获取内部元素 break、phoneme、等...
-    textFragment.childNodes.forEach((node, index) => {
+    fragment.childNodes.forEach((node, index) => {
       if (node.nodeType === Node.TEXT_NODE) {
-        // 创建一个文本节点并追加到 spanContent
+        // 创建一个文本节点并追加到 contentSpan
         const textNode = document.createTextNode(node!.textContent!);
-        spanContent.appendChild(textNode);
+        contentSpan.appendChild(textNode);
       } else if (node.nodeType === Node.ELEMENT_NODE) {
         const element = node as Element;
-
-        console.log(`element`, element);
-
         const type = element.getAttribute("type");
         if (type === "phoneme" || type === "break") {
           const span = document.createElement("span");
@@ -156,11 +160,11 @@ const ToolSidebar = () => {
           span.className = "text-xs text-[#0078d4] h-4 font-bold select-none";
           span.setAttribute("id", element.getAttribute("id")!);
           span.setAttribute("type", element.getAttribute("type")!);
-          spanContent.appendChild(span);
+          contentSpan.appendChild(span);
         } else {
           // 创建纯文本节点
           const textNode = document.createTextNode(node!.textContent!);
-          spanContent.appendChild(textNode);
+          contentSpan.appendChild(textNode);
         }
       }
 
@@ -171,177 +175,150 @@ const ToolSidebar = () => {
       element.remove();
     });
 
-    const spanEnd = document.createElement("span");
-    spanEnd.textContent = `#>`;
-    spanEnd.setAttribute("name", `${name}`);
-    spanEnd.className =
-      "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4 select-none";
-    spanEnd.contentEditable = "false";
-
     // 将span标签替换选中的文本
-    selectedRange?.deleteContents();
-    selectedRange?.insertNode(spanEnd);
-    selectedRange?.insertNode(spanContent);
-    selectedRange?.insertNode(spanStart);
+    range?.deleteContents();
+    range?.insertNode(endSpan);
+    range?.insertNode(contentSpan);
+    range?.insertNode(startSpan);
 
     // 清除选中文本
     selection?.removeAllRanges();
+  };
+
+  // 添加说话风格
+  const handleStyle = (style: string) => {
+    setCurrentStyle((prev) => (prev === style ? "" : style));
+
+    // 标签唯一标识
+    const name = new Date().getTime().toString();
+
+    // 起始标签
+    const startSpan = generateSpan({ name, underline: true });
+    startSpan.textContent = `<#${currentRole && currentRole !== "default" ? `${roleMap[currentRole]} - ` : ``}${
+      StylesEmoji[style]?.name || style
+    }`;
+
+    // 内容标签
+    const contentSpan = generateSpan({ name, type: "mstts:express-as", underline: true });
+    if (currentRole) contentSpan.setAttribute("role", `${currentRole}`);
+    contentSpan.setAttribute("style", `${style}`);
+    contentSpan.contentEditable = "true";
+
+    // 结束标签
+    const endSpan = generateSpan({ name, underline: true });
+    endSpan.textContent = `#>`;
+
+    generateNode(startSpan, contentSpan, endSpan);
 
     setCurrentStyle("");
   };
 
   // 添加角色
   const handleRole = (role: string) => {
-    // 获取选中的文本
-    const selection = window.getSelection();
-    const selectionStr = selection?.toString();
+    const { content } = windowSelection();
 
-    if (!selectionStr || role === "default") {
+    if (!content || role === "default") {
       return setCurrentRole((prev) => (prev === role ? "" : role));
     }
 
-    if (!selection) return;
+    // 标签唯一标识
+    const name = new Date().getTime().toString();
 
-    const parentElement = selection?.anchorNode?.parentNode as HTMLElement;
-
-    if (
-      parentElement?.nodeName === "SPAN" &&
-      parentElement?.getAttribute("type") &&
-      parentElement?.getAttribute("type") !== ""
-    ) {
-      return alert("声音角色不能嵌套");
-    }
-
-    const selectedRange = selection?.getRangeAt(0);
-    if (!selectedRange) return;
-    const textFragment = selectedRange.cloneContents();
-
-    const name = new Date().getTime();
-    const spanStart = document.createElement("span");
-    spanStart.setAttribute("name", `${name}`);
-    spanStart.className =
-      "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4 select-none";
-    spanStart.textContent = `<#${roleMap[role]}${
+    // 起始标签
+    const startSpan = generateSpan({ name, underline: true });
+    startSpan.textContent = `<#${roleMap[role]}${
       currentStyle ? `- ${StylesEmoji[currentStyle]?.name || currentStyle}` : ""
     }`;
-    spanStart.contentEditable = "false";
 
-    // 将DocumentFragment转换为HTML字符串并设置为spanContent的内容
-    const tempDiv = document.createElement("div");
-    tempDiv.appendChild(textFragment);
+    // 内容标签
+    const contentSpan = generateSpan({ name, type: "mstts:express-as", underline: true });
+    contentSpan.setAttribute("role", `${role}`);
+    if (currentStyle) contentSpan.setAttribute("style", `${currentStyle}`);
+    contentSpan.contentEditable = "true";
 
-    const spanContent = document.createElement("span");
-    spanContent.setAttribute("name", `${name}`);
-    spanContent.setAttribute("type", "mstts:express-as");
-    spanContent.setAttribute("role", `${role}`);
-    if (currentStyle) spanContent.setAttribute("style", `${currentStyle}`);
-    spanContent.innerHTML = `${tempDiv.innerHTML}` || "";
-    spanContent.className = "underline underline-offset-4 decoration-[#0078d4] select-none";
-    // 获取内部元素 break、phoneme、等...
-    textFragment.childNodes.forEach((node) => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        // 创建一个文本节点并追加到 spanContent
-        const textNode = document.createTextNode(node!.textContent!);
-        spanContent.appendChild(textNode);
-      } else if (node.nodeType === Node.ELEMENT_NODE) {
-        const element = node as Element;
+    // 结束标签
+    const endSpan = generateSpan({ name, underline: true });
+    endSpan.textContent = `#>`;
 
-        console.log(`element`, element);
+    generateNode(startSpan, contentSpan, endSpan);
+  };
 
-        const type = element.getAttribute("type");
-        if (type === "phoneme" || type === "break") {
-          const span = document.createElement("span");
-          span.textContent = node.textContent;
-          span.className = "text-xs text-[#0078d4] h-4 font-bold select-none";
-          span.setAttribute("id", element.getAttribute("id")!);
-          span.setAttribute("type", element.getAttribute("type")!);
-          spanContent.appendChild(span);
-        } else {
-          // 创建纯文本节点
-          const textNode = document.createTextNode(node!.textContent!);
-          spanContent.appendChild(textNode);
-        }
-      }
-    });
+  // 添加多语言语种
+  const handleLang = (lang: string) => {
+    // 标签唯一标识
+    const name = new Date().getTime().toString();
 
-    const spanEnd = document.createElement("span");
-    spanEnd.setAttribute("name", `${name}`);
-    spanEnd.textContent = `#>`;
-    spanEnd.className =
-      "text-xs text-[#0078d4] h-4 font-bold underline underline-offset-4 select-none";
-    spanEnd.contentEditable = "false";
+    // 起始标签
+    const startSpan = generateSpan({ name, underline: true });
+    startSpan.textContent = `<#${RegionMap[lang]?.name || lang}`;
 
-    // 将span标签替换选中的文本
-    selectedRange?.deleteContents();
-    selectedRange?.insertNode(spanEnd);
-    selectedRange?.insertNode(spanContent);
-    selectedRange?.insertNode(spanStart);
+    // 内容标签 <lang xml:lang="zh-CN-hunan">
+    const contentSpan = generateSpan({ name, type: "lang", underline: true });
+    if (currentRole) contentSpan.setAttribute("role", `${currentRole}`);
+    contentSpan.setAttribute("xml:lang", `${lang}`);
+    contentSpan.contentEditable = "true";
 
-    // 清除选中文本
-    selection?.removeAllRanges();
+    // 结束标签
+    const endSpan = generateSpan({ name, underline: true });
+    endSpan.textContent = `#>`;
+
+    generateNode(startSpan, contentSpan, endSpan);
+  };
+
+  const getToneSelection = () => {
+    const { content, range } = windowSelection();
+    if (!content || !range) return;
+    setRangeState(range);
+    setText(content[0]);
   };
 
   // 添加声调
   const handleTone = () => {
-    const name = new Date().getTime();
-    const span = document.createElement("span");
+    const id = new Date().getTime().toString();
+    const span = generateSpan({ id, type: "phoneme" });
     span.textContent = `[ ${pinYin} ]`;
-    span.setAttribute("id", `${name}`);
-    span.setAttribute("type", "phoneme");
-    span.className = "text-xs text-[#0078d4] h-4 font-bold select-none";
-    span.contentEditable = "false";
 
-    // 删除选中的文本
-    // selection?.deleteContents();
     // 将插入点移动到选区的末尾
-    range?.collapse(false);
+    rangeState?.collapse(false);
 
     // 插入span标签
-    range?.insertNode(span);
+    rangeState?.insertNode(span);
 
     // 创建 xml 节点 <phoneme alphabet="sapi" ph="de 2">的</phoneme>
     const xmlNode = `<phoneme alphabet="sapi" ph="${pinYin}">${text}</phoneme>`;
-    const xmlNodeObj = { id: `${name}`, node: xmlNode };
+    const xmlNodeObj = { id, node: xmlNode };
     addPhoneme(xmlNodeObj);
 
-    setRange(null);
+    setRangeState(null);
     setText("");
     setPinYin("");
   };
 
+  const getBreakSelection = () => {
+    const { range } = windowSelection();
+    if (!range) return;
+    setRangeState(range);
+  };
+
   // 添加停顿
-  const handleBreak = (time: number) => {
-    const divEeditor = useSSMLStore.getState().divEeditor;
-    if (!divEeditor) return;
+  const handleBreak = (time: number, isCustomBreak?: boolean) => {
+    const { range } = windowSelection();
+    let selectionRange = isCustomBreak ? rangeState : range;
 
-    let sele = range;
-    if (!sele) {
-      const winSelection = window.getSelection();
-      // console.log("selection", winSelection);
-      if (winSelection?.rangeCount === 0) return;
-      sele = winSelection!.getRangeAt(0);
-    }
-
-    if (!sele.toString) return;
-
-    const name = new Date().getTime();
-    const span = document.createElement("span");
+    const id = new Date().getTime().toString();
+    const span = generateSpan({ id, type: "break" });
     span.textContent = `<${time}ms>`;
-    span.setAttribute("id", `${name}`);
-    span.setAttribute("type", "break");
-    span.className = "text-xs text-[#0078d4] h-4 font-bold select-none";
-    span.contentEditable = "false";
 
     // 创建 xml 节点 <break time="500ms" />
     const xmlNode = `<break time="${time}ms"/>`;
-    const xmlNodeObj = { id: `${name}`, node: xmlNode };
+    const xmlNodeObj = { id, node: xmlNode };
     addBreak(xmlNodeObj);
 
     // 将span标签替换选中的文本
-    sele?.deleteContents();
-    sele?.insertNode(span);
+    selectionRange?.deleteContents();
+    selectionRange?.insertNode(span);
 
-    setRange(null);
+    setRangeState(null);
   };
 
   useEffect(() => {
@@ -350,10 +327,8 @@ const ToolSidebar = () => {
     setShowLocale(true);
     setShowTone(true);
     setShowBreak(true);
-
     setCurrentStyle("");
     setCurrentRole("");
-
     setKey((prev) => prev + 1);
   }, [voice]);
 
@@ -376,108 +351,58 @@ const ToolSidebar = () => {
         </span>
       </div>
 
-      {/* <div className="mb-1 border-t bg-zinc-500" /> */}
       {voice.RolePlayList && (
-        <>
-          <div className="px-1 pb-1">
-            <button
-              className="w-full h-6 text-sm flex items-center gap-2 px-1 rounded-[2px] hover:bg-zinc-300/50 transition-colors duration-200 ease-in-out"
-              onClick={() => setShowRole(!showRole)}
-            >
-              <div className="border-b border-zinc-600/80 w-full" />
-              <div className="flex-1 flex items-center h-full gap-1">
-                <span className="text-nowrap">角色</span>
-                <span className="text-xs">{JSON.parse(voice.RolePlayList).length}</span>
-              </div>
-              <div className="border-b border-zinc-600/80 w-full" />
-            </button>
-            {showRole && (
-              <div className="text-left text-wrap m-1">
-                <button
-                  className={cn(
-                    "border mt-1 mr-1 rounded-sm hover:bg-slate-400/50 transition-colors duration-200 p-0",
-                    currentRole === "default" ? "bg-slate-400/50" : ""
-                  )}
-                  onClick={() => handleRole("default")}
-                >
-                  {/* {rolePlayEmoji[role]?.emoji} */}
-                  <div className="text-xs p-1 text-center align-middle">默认</div>
-                </button>
-                {JSON.parse(voice.RolePlayList).map((role: string) => (
-                  <button
-                    className={cn(
-                      "border mt-1 mr-1 rounded-sm hover:bg-slate-400/50 transition-colors duration-200 p-0",
-                      role === currentRole ? "bg-slate-400/50" : ""
-                    )}
-                    key={role}
-                    onClick={() => handleRole(role)}
-                  >
-                    {/* {rolePlayEmoji[role]?.emoji} */}
-                    <div className="text-xs p-1 text-center align-middle">
-                      {rolePlayEmoji[role]?.name || role}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </>
+        <div className="px-1 pb-1">
+          <Separator label="角色" count={JSON.parse(voice.RolePlayList).length} handleClick={setShowRole} />
+          {showRole && (
+            <div className="text-left text-wrap m-1">
+              <BadgeButton title="默认" titleMap={rolePlayEmoji} handleClick={handleRole} className="px-1" />
+              {JSON.parse(voice.RolePlayList).map((role: string) => (
+                <BadgeButton
+                  key={role}
+                  title={role}
+                  titleMap={rolePlayEmoji}
+                  handleClick={handleRole}
+                  className="px-1"
+                />
+              ))}
+            </div>
+          )}
+        </div>
       )}
       {voice.StyleList && (
-        <>
-          <div className="px-1 pb-1">
-            <button
-              className="w-full h-6 text-sm flex items-center gap-2 px-1 rounded-[2px] hover:bg-zinc-300/50 transition-colors duration-200 ease-in-out"
-              onClick={() => setShowStyle(!showStyle)}
-            >
-              <div className="border-b border-zinc-600/80 w-full" />
-              <div className="flex flex-1 items-center justify-between gap-1">
-                <span className="text-nowrap">语气</span>
-                <span className="text-xs">{JSON.parse(voice.StyleList).length}</span>
-              </div>
-              <div className="border-b border-zinc-600/80 w-full" />
-            </button>
-            {showStyle && (
-              <div className="text-left text-wrap m-1">
-                {JSON.parse(voice.StyleList).map((style: string) => (
-                  <button
-                    className="border mt-1 mr-1 pr-1 rounded-sm hover:bg-slate-400/50 transition-colors duration-200"
-                    key={style}
-                    onClick={() => handleStyle(style)}
-                  >
-                    {StylesEmoji[style]?.emoji}
-
-                    <div className="whitespace-normal inline-block h-full pb-[2px] text-xs text-center align-middle">
-                      {StylesEmoji[style]?.name || style}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </>
+        <div className="px-1 pb-1">
+          <Separator label="语气" count={JSON.parse(voice.StyleList).length} handleClick={setShowStyle} />
+          {showStyle && (
+            <div className="text-left text-wrap m-1">
+              {JSON.parse(voice.StyleList).map((style: string) => (
+                <BadgeButton
+                  key={style}
+                  title={style}
+                  titleMap={StylesEmoji}
+                  handleClick={handleStyle}
+                  showEmoji
+                  className="pr-1 pl-[2px]"
+                />
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
       {voice.SecondaryLocaleList && (
         <div className="px-1 pb-1">
-          {/* <span className="text-sm text-nowrap">语言种类</span> */}
-          <button
-            className="w-full h-6 text-sm flex items-center gap-2 px-1 rounded-[2px] hover:bg-zinc-300/50 transition-colors duration-200 ease-in-out"
-            onClick={() => setShowLocale(!showLocale)}
-          >
-            <div className="border-b border-zinc-600/80 w-full" />
-            <span className="text-nowrap">语言种类</span>
-            <div className="border-b border-zinc-600/80 w-full" />
-          </button>
+          <Separator label="语言种类" handleClick={setShowLocale} />
           {showLocale && (
             <div className="text-left text-wrap m-1">
               {JSON.parse(voice.SecondaryLocaleList).map((locale: string) => (
-                <div
-                  className="whitespace-normal inline-block border mt-1 mr-1 px-1 rounded-sm"
+                <BadgeButton
                   key={locale}
-                >
-                  <span className="text-xs">{locale}</span>
-                </div>
+                  title={locale}
+                  titleMap={RegionMap}
+                  handleClick={handleLang}
+                  className="px-1"
+                />
               ))}
             </div>
           )}
@@ -485,97 +410,75 @@ const ToolSidebar = () => {
       )}
 
       <div className="px-1 pb-1">
-        {/* <span className="text-sm text-nowrap">语言种类</span> */}
-        <button
-          className="w-full h-6 text-sm flex items-center gap-2 px-1 rounded-[2px] hover:bg-zinc-300/50 transition-colors duration-200 ease-in-out"
-          onClick={() => setShowTone(!showTone)}
-        >
-          <div className="border-b border-zinc-600/80 w-full" />
-          <span className="text-nowrap">声调</span>
-          <div className="border-b border-zinc-600/80 w-full" />
-        </button>
-        <div className="flex gap-1 items-center m-1 py-1">
-          <span className="w-5 text-lg font-semibold">{text || "字"}</span>
-          <input
-            type="text"
-            placeholder="请输入拼音..."
-            className="w-full h-6 text-sm border  text-start px-1 rounded-[2px] outline-none focus:outline-none"
-            value={pinYin}
-            onChange={(e) => {
-              // 只能输入字母
-              // const value = e.target.value.replace(/[^a-zA-Z]/g, "");
-              setPinYin(e.target.value);
-            }}
-            onFocus={getToneSelection}
-          />
-          <button disabled={pinYin === ""} onClick={handleTone}>
-            <IoIosCheckboxOutline
-              size={30}
-              className={cn(
-                pinYin === ""
-                  ? "contrast-0 text-zinc-400/20"
-                  : "text-zinc-600 hover:text-slate-600/80"
-              )}
-            />
-          </button>
-        </div>
-      </div>
-      <div className="px-1">
-        <button
-          className="w-full h-6 text-sm flex items-center gap-2 px-1 rounded-[2px] hover:bg-zinc-300/50 transition-colors duration-200 ease-in-out"
-          onClick={() => setShowBreak(!showBreak)}
-        >
-          <div className="border-b border-zinc-600/80 w-full" />
-          <span className="text-nowrap">停顿</span>
-          <div className="border-b border-zinc-600/80 w-full" />
-        </button>
-        <div className="m-1">
-          <div className="flex items-center gap-1 w-full mt-1">
-            <div className="w-full relative h-6">
-              <input
-                type="number"
-                max={5000}
-                min={250}
-                value={breakTime}
-                className="w-full h-full text-sm border  text-start px-1 rounded-[2px] outline-none focus:outline-none"
-                onChange={(e) => {
-                  setBreakTime(
-                    Number(e.target.value) < 250
-                      ? 250
-                      : Number(e.target.value) > 5000
-                      ? 5000
-                      : Number(e.target.value)
-                  );
-                }}
-                onFocus={getBreakSelection}
-              />
-              <p className="text-nowrap text-sm absolute right-[1px] top-[2px] h-[22px] content-center bg-white pointer-events-none">
-                毫秒（ms）
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                handleBreak(breakTime);
+        <Separator label="声调" handleClick={setShowTone} />
+        {showTone && (
+          <div className="flex gap-1 items-center m-1 py-1">
+            <span className="w-5 text-lg font-semibold">{text || "字"}</span>
+            <input
+              type="text"
+              placeholder="请输入拼音..."
+              className="w-full h-6 text-sm border  text-start px-1 rounded-[2px] outline-none focus:outline-none"
+              value={pinYin}
+              onChange={(e) => {
+                // 只能输入字母
+                // const value = e.target.value.replace(/[^a-zA-Z]/g, "");
+                setPinYin(e.target.value);
               }}
-            >
+              onFocus={getToneSelection}
+            />
+            <button disabled={pinYin === ""} onClick={handleTone}>
               <IoIosCheckboxOutline
                 size={30}
-                className={cn("text-zinc-600 hover:text-slate-600/80")}
+                className={cn(pinYin === "" ? "contrast-0 text-zinc-400/20" : "text-zinc-600 hover:text-slate-600/80")}
               />
             </button>
           </div>
-          {Break.map((time) => (
-            <button
-              className="whitespace-normal inline-block border mt-1 mr-1 px-1 rounded-sm hover:bg-slate-400/50 transition-colors duration-200 text-sm"
-              key={time}
-              onClick={() => {
-                handleBreak(time);
-              }}
-            >
-              {time}ms
-            </button>
-          ))}
-        </div>
+        )}
+      </div>
+      <div className="px-1">
+        <Separator label="停顿" handleClick={setShowBreak} />
+        {showBreak && (
+          <div className="m-1">
+            <div className="flex items-center gap-1 w-full mt-1">
+              <div className="w-full relative h-6">
+                <input
+                  type="number"
+                  max={5000}
+                  min={250}
+                  value={breakTime}
+                  className="w-full h-full text-sm border  text-start px-1 rounded-[2px] outline-none focus:outline-none"
+                  onChange={(e) => {
+                    setBreakTime(
+                      Number(e.target.value) < 250 ? 250 : Number(e.target.value) > 5000 ? 5000 : Number(e.target.value)
+                    );
+                  }}
+                  onFocus={getBreakSelection}
+                />
+                <p className="text-nowrap text-sm absolute right-[1px] top-[2px] h-[22px] content-center bg-white pointer-events-none">
+                  毫秒（ms）
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  handleBreak(breakTime, true);
+                }}
+              >
+                <IoIosCheckboxOutline size={30} className={cn("text-zinc-600 hover:text-slate-600/80")} />
+              </button>
+            </div>
+            {Break.map((time) => (
+              <button
+                className="border mt-1 mr-1 px-1 rounded-sm hover:bg-slate-400/50 transition-colors duration-200 text-sm"
+                key={time}
+                onClick={() => {
+                  handleBreak(time);
+                }}
+              >
+                {time}ms
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -191,27 +191,27 @@ export const rolePlayEmoji: Record<string, { emoji: string; name: string }> = {
   },
   OlderAdultFemale: {
     emoji: "👩",
-    name: "成年女性",
+    name: "女中年",
   },
   OlderAdultMale: {
     emoji: "👨",
-    name: "成年男性",
+    name: "男中年",
   },
   SeniorFemale: {
     emoji: "👵",
-    name: "老年女性",
+    name: "女老年",
   },
   SeniorMale: {
     emoji: "👴",
-    name: "老年男性",
+    name: "男老年",
   },
   YoungAdultFemale: {
     emoji: "👩",
-    name: "青年女性",
+    name: "女青年",
   },
   YoungAdultMale: {
     emoji: "👨",
-    name: "青年男性",
+    name: "男青年",
   },
   Narrator: {
     emoji: "🎙️",
@@ -280,9 +280,7 @@ const Card = ({ voice, isDetailSidebar }: Props) => {
             </div>
             <div className="text-sm text-gray-400 flex h-5 justify-between">
               {voice.StyleList && JSON.parse(voice.StyleList).length > 0 && (
-                <div className=" flex items-center justify-center  ">
-                  {JSON.parse(voice.StyleList).length} 种语气
-                </div>
+                <div className=" flex items-center justify-center  ">{JSON.parse(voice.StyleList).length} 种语气</div>
               )}
               {voice.RolePlayList && JSON.parse(voice.RolePlayList).length > 0 && (
                 <div className=" flex items-center justify-center mr-1">
@@ -304,10 +302,7 @@ const Card = ({ voice, isDetailSidebar }: Props) => {
                 <div className="text-sm">语气</div>
                 <div className="text-left text-wrap">
                   {JSON.parse(voice.StyleList).map((style: string) => (
-                    <div
-                      className="whitespace-normal inline-block border mt-1 mr-1 pr-1 rounded-sm"
-                      key={style}
-                    >
+                    <div className="whitespace-normal inline-block border mt-1 mr-1 pr-1 rounded-sm" key={style}>
                       {StylesEmoji[style]?.emoji}
                       <span className="text-xs">{StylesEmoji[style]?.name || style}</span>
                     </div>
@@ -321,10 +316,7 @@ const Card = ({ voice, isDetailSidebar }: Props) => {
                 <span className="text-sm text-nowrap">角色</span>
                 <div className="text-left text-wrap">
                   {JSON.parse(voice.RolePlayList).map((role: string) => (
-                    <div
-                      className="whitespace-normal inline-block border mt-1 mr-1 px-1 rounded-sm"
-                      key={role}
-                    >
+                    <div className="whitespace-normal inline-block border mt-1 mr-1 px-1 rounded-sm" key={role}>
                       {/* {rolePlayEmoji[role]?.emoji} */}
                       <span className="text-xs">{rolePlayEmoji[role]?.name || role}</span>
                     </div>
@@ -338,10 +330,7 @@ const Card = ({ voice, isDetailSidebar }: Props) => {
                 <span className="text-sm text-nowrap">语言种类</span>
                 <div className="text-left text-wrap">
                   {JSON.parse(voice.SecondaryLocaleList).map((locale: string) => (
-                    <div
-                      className="whitespace-normal inline-block border mt-1 mr-1 px-1 rounded-sm"
-                      key={locale}
-                    >
+                    <div className="whitespace-normal inline-block border mt-1 mr-1 px-1 rounded-sm" key={locale}>
                       <span className="text-xs">{locale}</span>
                     </div>
                   ))}

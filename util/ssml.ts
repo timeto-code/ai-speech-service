@@ -52,6 +52,31 @@ export const generateSSML = async (sections: SsmlSection[], xmlNodes: XMLNode[])
     });
 
     document.querySelectorAll("span").forEach((node) => {
+      if (node.getAttribute("type") === "lang") {
+        // 创建新的 pph 元素
+        const newElement = document.createElement("lang");
+        // 复制原始元素的所有属性
+        Array.from(node.attributes).forEach((attr) => {
+          newElement.setAttribute(attr.name, attr.value);
+        });
+
+        // 将原 span 元素的所有子节点复制到新的 pph 元素中
+        while (node.firstChild) {
+          newElement.appendChild(node.firstChild);
+        }
+
+        // 替换 span 元素为 pph 元素
+        node.replaceWith(newElement);
+
+        // 移除不需要的属性
+        newElement.removeAttribute("name");
+        newElement.removeAttribute("type");
+        newElement.removeAttribute("class");
+        newElement.removeAttribute("contenteditable");
+      }
+    });
+
+    document.querySelectorAll("span").forEach((node) => {
       if (node.getAttribute("type") === "mstts:express-as") {
         // 创建新的 pph 元素
         const newElement = document.createElement("mstts:express-as");
@@ -72,6 +97,7 @@ export const generateSSML = async (sections: SsmlSection[], xmlNodes: XMLNode[])
         newElement.removeAttribute("name");
         newElement.removeAttribute("type");
         newElement.removeAttribute("class");
+        newElement.removeAttribute("contenteditable");
       }
     });
 

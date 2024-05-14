@@ -53,7 +53,7 @@ export const speechSynthesis = async (sectionSynthesis: Boolean, section?: SsmlS
     toast("", {
       position: "bottom-left",
       description: sectionSynthesis ? "未选择声音或段落为空。" : "存在未选择声音或空段落。",
-      style: { width: "auto" },
+      style: { width: "auto", backgroundColor: "#fcd14f", color: "#000", fontWeight: 600, border: "1px solid #fbbd04" },
     });
     return state.setStatusError();
   }

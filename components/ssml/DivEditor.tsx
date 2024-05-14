@@ -2,12 +2,7 @@
 
 import { speechSynthesis } from "@/lib/tts-synthesis";
 import { useAudioPlayerStore } from "@/store/useAudioPlayerStore";
-import {
-  SsmlSection,
-  useSSMLStore,
-  useSsmlSectionsStore,
-  useSsmlSynthesisStore,
-} from "@/store/useSSMLStore";
+import { SsmlSection, useSSMLStore, useSsmlSectionsStore, useSsmlSynthesisStore } from "@/store/useSSMLStore";
 import React, { useEffect } from "react";
 import EditorMenu from "./EditorMenu";
 import { cn } from "@/lib/utils";
@@ -199,7 +194,7 @@ const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
           contentEditable
           onPaste={handlePaste}
           onFocus={() => {
-            useSSMLStore.setState({ currentVoceSection: section, divEeditor: "div" });
+            useSSMLStore.setState({ currentVoceSection: section });
             if (section.voice) {
               useVoiceStore.setState({ voice: section.voice });
             } else {
