@@ -29,17 +29,10 @@ const Voices = () => {
   return (
     <div className="w-full h-full flex flex-col gap-2">
       <div className="relative h-8">
-        <Button
-          variant="outline"
-          className="w-full h-full relative"
-          disabled={isLoading}
-          onClick={handleClick}
-        >
+        <Button variant="outline" className="w-full h-full relative" disabled={isLoading} onClick={handleClick}>
           <span>更新声音列表</span>
         </Button>
-        {isLoading && (
-          <Spinner className="absolute top-3 left-[28%] h-4 w-4 animate-spin text-[#339900] mr-2" />
-        )}
+        {true && <Spinner className="absolute top-2 left-[22%] h-4 w-4 animate-spin text-[#339900] mr-2" />}
       </div>
       <div className="h-8">
         <LanguageCombobox isLoading={isLoading} />

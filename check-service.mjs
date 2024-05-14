@@ -14,9 +14,9 @@ const setIntervalId = setInterval(async () => {
     }
   } catch (error) {
     if (error.response) {
-      console.log(`错误响应状态码: ${error.response.status}`);
+      console.log(`\n响应状态码: ${error.response.status}`);
       if (error.response.status === 307) {
-        console.log(`服务器已启动...`);
+        console.log(`\n服务器已启动...`);
         clearInterval(setIntervalId);
         return;
       }
