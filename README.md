@@ -8,6 +8,8 @@
 
 1. 下载并安装 [Node.js](https://nodejs.org/en) ，推荐安装 `LTS v20.12.2` 或更高 `LTS` 版本。
 
+1. 下载并安装 [Python](https://www.python.org/downloads/) ，根据 [node-gyp](https://github.com/nodejs/node-gyp#configuring-python-dependency) 官方文档要求，请安装 `Python 3.12` 或更高版本。
+
 1. 本地目录中找到 `.env` 文件，填入 Azure AI Speech 服务的密钥和区域信息。无法找到 `.env` 文件时，确保已打开隐藏文件显示。
 
    ```shell
@@ -23,13 +25,9 @@
 
 1. 安装依赖，并启动应用程序。
 
-   - `Windows` 用户执行目录中 `install.bat` 。安装结束后，应用程序会自动启动。
+   - `Windows` 用户找到目录中 `install.bat` 文件双击运行安装 。安装结束后，应用将自动启动。
 
-   - `Mac`，`Linux` 用户执行目录中 `install.sh` 。安装结束后，应用程序会自动启动。
-
-   - 部分用户安装过程会出现报错提示。提示需要安装 `Python`。推荐安装最新 `LTS` 版本，或根据错误提示安装指定版本。
-
-   - 安装 Python 后，重新执行 `install.bat` 或 `install.sh` 执行安装。
+   - `Mac`，`Linux` 用户在终端中打开目录，执行 `sh ./install.sh` 命令进行安装。安装结束后，应用将自动启动。
 
    - 如果 `install.bat` 或 `install.sh` 无法执行或安装失败时，可尝试 [手动安装](#手动安装) 。
 
@@ -42,8 +40,8 @@
 - 关闭应用：关闭终端窗口即可。
 
 - 重新启动应用：
-  - `Windows` 用户执行目录中 `run.bat` 。
-  - `Mac`，`Linux` 用户执行目录中 `run.sh` 。
+  - `Windows` 用户执行目录中 `run.bat` 或者在终端打开目录执行 `npm start` 。
+  - `Mac`，`Linux` 用户执行目录中 `sh ./run.sh` 或者在终端打开目录执行 `npm start` 。
 
 ### 手动安装
 
