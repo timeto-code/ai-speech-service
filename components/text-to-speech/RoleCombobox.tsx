@@ -1,7 +1,7 @@
-import { useVoiceStore } from "@/store/useVoiceStore";
-import React, { useEffect, useState } from "react";
-import Combobox from "../Combobox";
 import { fetchRoleList } from "@/actions/api/tts";
+import { useVoiceStore } from "@/store/useVoiceStore";
+import { useEffect, useState } from "react";
+import Combobox from "../Combobox";
 
 interface Props {
   isLoading: boolean;
@@ -10,6 +10,7 @@ interface Props {
 const RoleCombobox = ({ isLoading }: Props) => {
   const [value, setValue] = useState<string>("All");
   const [roles, setRoles] = useState<OptionObject[]>([]);
+  const voiceListRefreshed = useVoiceStore((state) => state.voiceListRefreshed);
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -20,8 +21,9 @@ const RoleCombobox = ({ isLoading }: Props) => {
         // 提示错误
       }
     };
+
     fetchRoles();
-  }, []);
+  }, [voiceListRefreshed]);
 
   useEffect(() => {
     useVoiceStore.setState({ role: value });
