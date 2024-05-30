@@ -231,7 +231,6 @@ const Card = ({ voice, isDetailSidebar }: Props) => {
     // 详情页面
     if (isDetailSidebar) return;
 
-    console.log("voice", voice);
     useVoiceStore.setState({ voice: voice });
     useVoiceStore.setState({
       voiceRefreshed: new Date().getTime(),

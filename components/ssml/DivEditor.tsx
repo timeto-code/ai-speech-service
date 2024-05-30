@@ -121,8 +121,6 @@ const DivEditor = ({ section, handleDeleteSection }: DivEditorProps) => {
     const callback = (mutationsList: MutationRecord[]) => {
       for (const mutation of mutationsList) {
         mutation.removedNodes.forEach((node) => {
-          console.log("Element removed:", node);
-
           if (node.nodeType === 1) {
             const element = node as HTMLElement;
             if (!element) return;
