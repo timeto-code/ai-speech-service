@@ -50,9 +50,7 @@ export const fetchRegionVoiceList = async () => {
         const prismaVoice = {
           ...existed,
           ...voice,
-          SecondaryLocaleList: voice.SecondaryLocaleList
-            ? JSON.stringify(voice.SecondaryLocaleList)
-            : "",
+          SecondaryLocaleList: voice.SecondaryLocaleList ? JSON.stringify(voice.SecondaryLocaleList) : "",
           StyleList: voice.StyleList ? JSON.stringify(voice.StyleList) : "",
           RolePlayList: voice.RolePlayList ? JSON.stringify(voice.RolePlayList) : "",
         } as Voice;
@@ -62,9 +60,7 @@ export const fetchRegionVoiceList = async () => {
         // 新增声音
         const prismaVoice = {
           ...voice,
-          SecondaryLocaleList: voice.SecondaryLocaleList
-            ? JSON.stringify(voice.SecondaryLocaleList)
-            : "",
+          SecondaryLocaleList: voice.SecondaryLocaleList ? JSON.stringify(voice.SecondaryLocaleList) : "",
           StyleList: voice.StyleList ? JSON.stringify(voice.StyleList) : "",
           RolePlayList: voice.RolePlayList ? JSON.stringify(voice.RolePlayList) : "",
           order: index,
@@ -75,14 +71,16 @@ export const fetchRegionVoiceList = async () => {
     });
 
     // 更新
-    existingVoices.forEach(async (voice) => {
+    for (const voice of existingVoices) {
+      const { id, createdAt, ...updateData } = voice;
       await prisma.voice.update({
         where: {
           id: voice.id,
         },
-        data: voice,
+        data: updateData,
       });
-    });
+    }
+
     // 新建
     await prisma.voice.createMany({
       data: newVoices,

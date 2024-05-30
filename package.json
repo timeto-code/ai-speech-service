@@ -1,9 +1,9 @@
 {
   "name": "microsoft-speech-service",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_ENV=development next dev --port 3007",
+    "dev": "cross-env NODE_ENV=development next dev --port 80",
     "build": "next build",
     "start": "cross-env NODE_ENV=production next start --port 3007",
     "lint": "next lint"
