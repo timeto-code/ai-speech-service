@@ -1,6 +1,6 @@
 {
   "name": "microsoft-speech-service",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_ENV=development next dev --port 80",
