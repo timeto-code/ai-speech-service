@@ -32,7 +32,7 @@ const Voices = () => {
         <Button variant="outline" className="w-full h-full relative" disabled={isLoading} onClick={handleClick}>
           <span>更新声音列表</span>
         </Button>
-        {true && <Spinner className="absolute top-2 left-[22%] h-4 w-4 animate-spin text-[#339900] mr-2" />}
+        {isLoading && <Spinner className="absolute top-2 left-[22%] h-4 w-4 animate-spin text-[#339900] mr-2" />}
       </div>
       <div className="h-8">
         <LanguageCombobox isLoading={isLoading} />
