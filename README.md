@@ -14,16 +14,16 @@
 
    ```shell
    # Azure AI Speech 服务的密钥
-   AZURE_SPEECH_KEY='密钥'
+   SPEECH_KEY='密钥'
 
    # Azure AI Speech 服务的区域信息
-   AZURE_SPEECH_REGION='订阅区域'
+   SPEECH_REGION='订阅区域'
 
    # Azure AI Speech 区域 API 地址
    REGION_VOICE_LIST_API='https://[订阅区域].tts.speech.microsoft.com/cognitiveservices/voices/list'
    ```
 
-1. 安装依赖，并启动应用程序。
+1. 自动安装依赖，并启动应用程序。
 
    - `Windows` 用户找到目录中 `install.bat` 文件双击运行安装 。安装结束后，应用将自动启动。
 
@@ -40,8 +40,10 @@
 - 关闭应用：关闭终端窗口即可。
 
 - 重新启动应用：
+
   - `Windows` 用户执行目录中 `run.bat` 或者在终端打开目录执行 `npm start` 。
-  - `Mac`，`Linux` 用户执行目录中 `sh ./run.sh` 或者在终端打开目录执行 `npm start` 。
+  
+  - `Mac`，`Linux` 在终端打开目录执行 `sh ./run.sh` 命令启动应用，或执行 `npm start` 命令启动应用。
 
 ### 手动安装
 
