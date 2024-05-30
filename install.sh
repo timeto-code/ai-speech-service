@@ -11,7 +11,7 @@ npx prisma generate
 
 echo "Starting the app..."
 sleep 3
-./run.sh
+sh ./run.sh
 
 read -p "Press any key to exit..." -n1 -s
 echo
